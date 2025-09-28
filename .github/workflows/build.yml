@@ -24,27 +24,28 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential
-          make build EXT="" OPTIONS="-O2 -std=c++23" OUTPUT=""
+          make build EXT="" OPTIONS="-O2 -std=c++23" OUTPUT="" PROJECT="apic-linux"
     
       - name: Install dependencies and build (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           choco install make mingw -y
-          make build OPTIONS="-O2 -std=c++23" OUTPUT=""
+          make build OPTIONS="-O2 -std=c++23" OUTPUT="" PROJECT="apic-win"
     
       - name: Install dependencies and build (MacOS)
         if: matrix.os == 'macos-latest'
         run: | 
           brew install make
-          make build EXT="" COMP=clang++ OPTIONS="-O2 -std=c++23" OUTPUT=""
+          make build EXT="" COMP=clang++ OPTIONS="-O2 -std=c++23" OUTPUT="" PROJECT="apic-macos"
       
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
           path: |
-            apic
-            apic.exe
+            apic-macos
+            apic-linux
+            apic-win.exe
 
   release:
     name: Create release if not exists

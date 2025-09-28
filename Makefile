@@ -3,7 +3,7 @@
 EXT ?=		.exe
 COMP ?=		g++
 OUTPUT ?=	build/
-PROJECT :=	apic
+PROJECT ?=	apic
 SOURCES :=	src/*.cpp src/utils/*.cpp src/common/*.cpp src/core/*.cpp src/nodes/*.cpp src/common/values/*.cpp
 INCLUDES :=	-Iinc
 OPTIONS ?=	-O2 -std=c++23 -Wall
