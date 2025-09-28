@@ -1,0 +1,13 @@
+entry init {
+    APICA:LognInfo("Hello from an apica source file!", "Another param")
+}
+
+entry update {
+    const j = "YAYY\n"
+    APICA:Quit();
+    APICA:LogSuccess(j)
+}
+
+entry quit {
+    APICA:LognInfo("Have a nice day!");
+}
