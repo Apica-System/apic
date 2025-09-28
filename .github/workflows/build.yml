@@ -17,20 +17,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies (Linux)
+      - name: Install dependencies and build (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update && sudo apt-get install -y build-essential
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential
+          make build EXT="" OPTIONS="-O2 -std=c++23"
     
-      - name: Install dependencies (Windows)
+      - name: Install dependencies and build (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install make mingw -y
+        run: |
+          choco install make mingw -y
+          make build OPTIONS="-O2 -std=c++23"
     
-      - name: Install dependencies (MacOS)
+      - name: Install dependencies and build (MacOS)
         if: matrix.os == 'macos-latest'
-        run: brew install make
-      
-      - name: Build apic
-        run: make build
+        run: | 
+          brew install make
+          make build EXT="" COMP=clang++ OPTIONS="-O2 -std=c++23"
       
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
