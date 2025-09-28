@@ -2,7 +2,7 @@
 
 EXT ?=		.exe
 COMP ?=		g++
-OUTPUT :=	build
+OUTPUT ?=	build/
 PROJECT :=	apic
 SOURCES :=	src/*.cpp src/utils/*.cpp src/common/*.cpp src/core/*.cpp src/nodes/*.cpp src/common/values/*.cpp
 INCLUDES :=	-Iinc
@@ -11,7 +11,7 @@ ARGS :=		# console arguments
 
 
 build:
-	$(COMP) $(INCLUDES) $(SOURCES) -o $(OUTPUT)/$(PROJECT)$(EXT) $(OPTIONS)
+	$(COMP) $(INCLUDES) $(SOURCES) -o $(OUTPUT)$(PROJECT)$(EXT) $(OPTIONS)
 
 run:
-	./$(OUTPUT)/$(PROJECT)$(EXT) $(ARGS)
+	./$(OUTPUT)$(PROJECT)$(EXT) $(ARGS)
