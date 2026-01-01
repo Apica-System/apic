@@ -1,0 +1,31 @@
+﻿use crate::nodes::node::Node;
+use crate::utils::position::Position;
+
+pub struct NodeGlobalScope {
+    position: Position,
+    contained: Node,
+}
+
+impl NodeGlobalScope {
+    pub fn init(position: Position, contained: Node) -> NodeGlobalScope {
+        NodeGlobalScope { position, contained }
+    }
+
+    pub fn get_position(&self) -> &Position {
+        &self.position
+    }
+
+    pub fn show(&self, indent: &mut String, end: char) {
+        print!("{indent}NodeGlobalScope{end}");
+
+        indent.push(' ');
+        indent.push(' ');
+        self.contained.show(indent, end);
+        indent.pop();
+        indent.pop();
+    }
+    
+    pub fn get_contained(&self) -> &Node {
+        &self.contained
+    }
+}
