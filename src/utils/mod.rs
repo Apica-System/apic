@@ -7,3 +7,4 @@ pub mod builtins;
 pub mod decoder;
 pub mod apic_cmd;
 pub mod writer;
+pub mod builtin_func_info;

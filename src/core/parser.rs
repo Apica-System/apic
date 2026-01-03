@@ -484,15 +484,8 @@ impl<'a> Parser<'a> {
 
     fn parse_parameter(&mut self) -> NodeParameter {
         let current = Token::init_from(self.get());
-        let next_kind = self.get_at(1).get_kind();
-        let explicit_name = if *current.get_kind() == TokenKind::Identifier && *next_kind == TokenKind::Colon {
-            self.advance();
-            self.advance();
-            Some(String::from(self.source.get_text_from_position(current.get_position())))
-        } else { None };
-
         let expression = self.parse_statement(ParserModifier::InnerScope);
-        NodeParameter::init(Position::init_from(current.get_position()), explicit_name, expression)
+        NodeParameter::init(Position::init_from(current.get_position()), expression)
     }
 
     fn parse_var_const_call(&mut self, token: Token) -> Node {
@@ -530,15 +523,6 @@ impl<'a> Parser<'a> {
             self.tokens.last().unwrap()
         } else {
             &self.tokens[self.index]
-        }
-    }
-
-    fn get_at(&self, offset: usize) -> &Token {
-        let index = self.index + offset;
-        if index >= self.tokens.len() {
-            self.tokens.last().unwrap()
-        } else {
-            &self.tokens[index]
         }
     }
 

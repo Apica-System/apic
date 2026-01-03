@@ -4,6 +4,7 @@ use apica_common::bytecodes::{ApicaBuiltinFunctionBytecode, ApicaTypeBytecode};
 use apica_common::values::u32::ValueU32;
 use apica_common::values::value::Value;
 use crate::nodes::literal::NodeLiteral;
+use crate::utils::builtin_func_info::{BuiltinFuncInfo, ParameterInfo};
 use crate::utils::position::Position;
 use crate::utils::token::TokenKind;
 
@@ -61,27 +62,98 @@ pub static APICA_TYPES: LazyLock<HashMap<&'static str, ApicaTypeBytecode>> = Laz
     return m;
 });
 
-pub static APICA_BUILTIN_FUNCTIONS: LazyLock<HashMap<&'static str, ApicaBuiltinFunctionBytecode>> = LazyLock::new(|| {
+pub static APICA_BUILTIN_FUNCTIONS: LazyLock<HashMap<&'static str, BuiltinFuncInfo>> = LazyLock::new(|| {
     let mut m = HashMap::new();
 
-    m.insert("Quit", ApicaBuiltinFunctionBytecode::Quit);
-    m.insert("LoadApp", ApicaBuiltinFunctionBytecode::LoadApp);
+    m.insert("Quit", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::Quit,
+        vec![],
+        0,
+    ));
+    
+    m.insert("LoadApp", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LoadApp,
+        vec![ParameterInfo::init(false, Some(ApicaTypeBytecode::String), None)],
+        1,
+    ));
 
-    m.insert("LogInfo", ApicaBuiltinFunctionBytecode::LogInfo);
-    m.insert("LognInfo", ApicaBuiltinFunctionBytecode::LognInfo);
-    m.insert("LogSuccess", ApicaBuiltinFunctionBytecode::LogSuccess);
-    m.insert("LognSuccess", ApicaBuiltinFunctionBytecode::LognSuccess);
-    m.insert("LogWarning", ApicaBuiltinFunctionBytecode::LogWarning);
-    m.insert("LognWarning", ApicaBuiltinFunctionBytecode::LognWarning);
-    m.insert("LogError", ApicaBuiltinFunctionBytecode::LogError);
-    m.insert("LognError", ApicaBuiltinFunctionBytecode::LognError);
+    m.insert("LogInfo", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LogInfo,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LognInfo", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LognInfo,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LogSuccess", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LogSuccess,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LognSuccess", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LognSuccess,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LogWarning", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LogWarning,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LognWarning", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LognWarning,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LogError", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LogError,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
+    
+    m.insert("LognError", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::LognError,
+        vec![ParameterInfo::init(true, None, None)],
+        0,
+    ));
 
-    m.insert("SetTitle", ApicaBuiltinFunctionBytecode::SetTitle);
-    m.insert("SetResizable", ApicaBuiltinFunctionBytecode::SetResizable);
+    m.insert("SetTitle", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::SetTitle,
+        vec![ParameterInfo::init(false, Some(ApicaTypeBytecode::String), None)],
+        1,
+    ));
+    
+    m.insert("SetResizable", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::SetResizable,
+        vec![ParameterInfo::init(false, Some(ApicaTypeBytecode::Bool), None)],
+        1,
+    ));
 
-    m.insert("IsKeyReleased", ApicaBuiltinFunctionBytecode::IsKeyReleased);
-    m.insert("IsKeyJustPressed", ApicaBuiltinFunctionBytecode::IsKeyJustPressed);
-    m.insert("IsKeyPressed", ApicaBuiltinFunctionBytecode::IsKeyPressed);
+    m.insert("IsKeyReleased", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::IsKeyReleased,
+        vec![ParameterInfo::init(false, Some(ApicaTypeBytecode::U32), None)],
+        1,
+    ));
+    
+    m.insert("IsKeyJustPressed", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::IsKeyJustPressed,
+        vec![ParameterInfo::init(false, Some(ApicaTypeBytecode::U32), None)],
+        1,
+    ));
+    
+    m.insert("IsKeyPressed", BuiltinFuncInfo::init(
+        ApicaBuiltinFunctionBytecode::IsKeyPressed,
+        vec![ParameterInfo::init(false, Some(ApicaTypeBytecode::U32), None)],
+        1,
+    ));
 
     return m;
 });
@@ -92,6 +164,9 @@ pub static APICA_BUILTIN_CONSTANTS: LazyLock<HashMap<&'static str, NodeLiteral>>
     m.insert("KEY_Q", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(16))));
     m.insert("KEY_W", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(17))));
     m.insert("KEY_E", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(18))));
+    m.insert("KEY_R", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(19))));
+    m.insert("KEY_T", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(20))));
+    m.insert("KEY_Y", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(21))));
 
     return m;
 });

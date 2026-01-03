@@ -284,7 +284,21 @@ impl<'a> Emitter<'a> {
         if mode.contains(EmitterModifier::Builtin) {
             write_u64(&mut self.output_file, ApicaBytecode::BuiltinFuncCall as u64, &mut self.diag_bag);
             if let Some(builtin_func) = APICA_BUILTIN_FUNCTIONS.get(call.get_name().as_str()) {
-                write_u64(&mut self.output_file, *builtin_func as u64, &mut self.diag_bag);
+                let param_numbers = call.get_parameters().len();
+                if param_numbers != builtin_func.get_parameters().len() && param_numbers != builtin_func.get_required() {
+                    self.diag_bag.add(Diagnostic::init_complete(
+                        DiagnosticKind::Error,
+                        format!("EmitterError: Incorrect number of parameters for function `{}`", call.get_name()),
+                        Position::init_from(call.get_position()),
+                    ));
+                    return;
+                }
+
+                write_u64(&mut self.output_file, builtin_func.get_bytecode() as u64, &mut self.diag_bag);
+                for param in call.get_parameters() {
+                    self.emit_parameter(param, mode - EmitterModifier::Builtin);
+                }
+                write_u64(&mut self.output_file, ApicaBytecode::EndOfBlock as u64, &mut self.diag_bag);
             } else {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
@@ -293,11 +307,6 @@ impl<'a> Emitter<'a> {
                 ));
                 return;
             }
-
-            for param in call.get_parameters() {
-                self.emit_parameter(param, mode - EmitterModifier::Builtin);
-            }
-            write_u64(&mut self.output_file, ApicaBytecode::EndOfBlock as u64, &mut self.diag_bag);
         } else {
             // TODO: handle user-defined function calls
             self.diag_bag.add(Diagnostic::init_complete(
@@ -309,7 +318,6 @@ impl<'a> Emitter<'a> {
     }
 
     fn emit_parameter(&mut self, param: &NodeParameter, mode: EmitterModifier) {
-        // TODO: handle explicit name
         self.emit_node(param.get_expression(), mode);
     }
 
