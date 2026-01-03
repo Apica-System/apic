@@ -9,7 +9,6 @@ on:
 permissions:
   contents: write
 
-
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -34,8 +33,9 @@ jobs:
 
           echo "Latest release: $LATEST"
           echo "Cargo version: ${{ steps.version.outputs.version }}"
-  
-          if [ "$(printf '%s\n' "$LATEST" "${{ steps.version.outputs.version }}" | sort -V | tail -n1)" = "${{ steps.version.outputs.version }}" ] && [ "$LATEST" != "${{ steps.version.outputs.version }}" ]; then
+
+          if [ "$(printf '%s\n' "$LATEST" "${{ steps.version.outputs.version }}" | sort -V | tail -n1)" = "${{ steps.version.outputs.version }}" ] \
+             && [ "$LATEST" != "${{ steps.version.outputs.version }}" ]; then
             echo "should_release=true" >> $GITHUB_OUTPUT
           else
             echo "should_release=false" >> $GITHUB_OUTPUT
@@ -43,8 +43,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Run tests (once)
+        run: cargo test --release
+
   build:
-    needs: check-version
+    needs: [ check-version, test ]
     if: needs.check-version.outputs.should_release == 'true'
 
     strategy:
@@ -72,20 +83,16 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install cross tools (Linux ARM)
-        if: contains(matrix.target, 'aarch64') && matrix.os == 'ubuntu-latest'
-        run: sudo apt install -y gcc-aarch64-linux-gnu
-
-      - name: Run tests
-        run: cargo test --release
+      - name: Install cross
+        run: cargo install cross
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cross build --release --target ${{ matrix.target }}
 
       - name: Package binary
         shell: bash
         run: |
-          mkdir dist
+          mkdir -p dist
           BIN=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].targets[0].name')
           EXT=""
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then EXT=".exe"; fi
