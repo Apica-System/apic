@@ -117,7 +117,9 @@ jobs:
 
       - name: Create GitHub release
         run: |
-          gh release create v${{ needs.check-version.outputs.version }} artifacts/** \
+          FILES=$(find artifacts -type f)
+          echo "Uploading files: $FILES"
+          gh release create v${{ needs.check-version.outputs.version }} $FILES \
             --title "v${{ needs.check-version.outputs.version }}" \
             --notes "Automated release"
         env:
