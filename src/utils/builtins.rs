@@ -1,6 +1,6 @@
 ﻿use std::collections::HashMap;
 use std::sync::LazyLock;
-use apica_common::bytecodes::{ApicaBuiltinFunctionBytecode, ApicaTypeBytecode};
+use apica_common::bytecodes::{ApicaBuiltinFunctionBytecode, ApicaSpecificationBytecode, ApicaTypeBytecode};
 use apica_common::values::u32::ValueU32;
 use apica_common::values::value::Value;
 use crate::nodes::literal::NodeLiteral;
@@ -168,5 +168,18 @@ pub static APICA_BUILTIN_CONSTANTS: LazyLock<HashMap<&'static str, NodeLiteral>>
     m.insert("KEY_T", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(20))));
     m.insert("KEY_Y", NodeLiteral::init(Position::init(0, 0), Value::U32(ValueU32::init_with(21))));
 
+    return m;
+});
+
+pub static APICA_SPECIFICATIONS: LazyLock<HashMap<&'static str, ApicaSpecificationBytecode>> = LazyLock::new(|| {
+    let mut m = HashMap::new();
+    
+    m.insert("title", ApicaSpecificationBytecode::Title);
+    m.insert("id", ApicaSpecificationBytecode::Id);
+    m.insert("logger", ApicaSpecificationBytecode::LoggerActivation);
+    m.insert("width", ApicaSpecificationBytecode::WindowWidth);
+    m.insert("height", ApicaSpecificationBytecode::WindowHeight);
+    m.insert("version", ApicaSpecificationBytecode::Version);
+    
     return m;
 });

@@ -1,4 +1,4 @@
-﻿use apica_common::bytecodes::{ApicaEntrypointBytecode, ApicaTypeBytecode};
+﻿use apica_common::bytecodes::{ApicaEntrypointBytecode, ApicaSpecificationBytecode, ApicaTypeBytecode};
 use apica_common::values::bool::ValueBool;
 use apica_common::values::null::ValueNull;
 use apica_common::values::string::ValueString;
@@ -13,6 +13,10 @@ use crate::nodes::_while::NodeWhile;
 use crate::nodes::bad::NodeBad;
 use crate::nodes::binary_op::NodeBinaryOp;
 use crate::nodes::compound::NodeCompound;
+use crate::nodes::data::bool::NodeDataBool;
+use crate::nodes::data::specs::NodeDataSpecifications;
+use crate::nodes::data::string::NodeDataString;
+use crate::nodes::data::u32::NodeDataU32;
 use crate::nodes::entrypoint::NodeEntrypoint;
 use crate::nodes::eof::NodeEndOfFile;
 use crate::nodes::function_call::NodeFunctionCall;
@@ -27,7 +31,7 @@ use crate::nodes::ternary_op::NodeTernaryOp;
 use crate::nodes::unary_op::NodeUnaryOp;
 use crate::nodes::var_const_call::NodeVarConstCall;
 use crate::nodes::var_const_decl::NodeVarConstDecl;
-use crate::utils::builtins::APICA_TYPES;
+use crate::utils::builtins::{APICA_SPECIFICATIONS, APICA_TYPES};
 use crate::utils::decoder::{decode_binary_integer, decode_hexadecimal_integer, decode_integer, decode_octal_integer, decode_string};
 use crate::utils::diagnostic::{Diagnostic, DiagnosticKind};
 use crate::utils::diagnostic_bag::DiagnosticBag;
@@ -80,6 +84,7 @@ impl<'a> Parser<'a> {
         match current_kind {
             TokenKind::LeftBrace => return self.parse_compound(modifier),
             TokenKind::Entrypoint => return self.parse_entrypoint(modifier),
+            TokenKind::Specifications => return self.parse_specifications(modifier),
             TokenKind::Var => return self.parse_var_const_decl(modifier, false),
             TokenKind::Const => return self.parse_var_const_decl(modifier, true),
             TokenKind::Global => return self.parse_global_scope(modifier),
@@ -494,6 +499,171 @@ impl<'a> Parser<'a> {
             Position::init_from(token.get_position()),
             String::from(var_const_name)
         ))
+    }
+
+    fn parse_specifications(&mut self, modifier: ParserModifier) -> Node {
+        let specs_token = self.get_and_advance();
+        self.skip_new_lines();
+
+        let left_brace_token = self.get();
+        if *left_brace_token.get_kind() != TokenKind::LeftBrace {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                String::from("ParserError: `specs` should be followed by a block of specifications"),
+                Position::init_from(specs_token.get_position()),
+            ));
+
+            return Node::Bad(NodeBad::init(Position::init_from(specs_token.get_position())));
+        }
+        self.advance();
+        self.skip_new_lines();
+
+        let mut specs = vec![];
+        while let Some(spec) = self.parse_specification() {
+            specs.push(spec);
+            if *self.get().get_kind() != TokenKind::Comma { break; }
+
+            self.advance();
+            self.skip_new_lines();
+        }
+
+        self.skip_new_lines();
+        let right_brace_token = self.get();
+        if *right_brace_token.get_kind() != TokenKind::RightBrace {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                String::from("ParserError: `specs` block of specifications should be closed by `}`"),
+                Position::init_from(right_brace_token.get_position()),
+            ));
+
+            return Node::Bad(NodeBad::init(Position::init_from(specs_token.get_position())));
+        }
+        self.advance();
+
+        if modifier.contains(ParserModifier::InnerScope) {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                String::from("ParserError: Cannot declare an entrypoint out of the main global scope"),
+                Position::init_from(specs_token.get_position()),
+            ));
+
+            return Node::Bad(NodeBad::init(Position::init_from(specs_token.get_position())));
+        }
+
+        Node::DataSpecs(NodeDataSpecifications::init(
+            Position::init_from(specs_token.get_position()),
+            specs
+        ))
+    }
+
+    fn parse_specification(&mut self) -> Option<Node> {
+        if *self.get().get_kind() == TokenKind::RightBrace {
+            return None;
+        }
+
+        let spec_name = self.get_and_advance();
+        if *spec_name.get_kind() != TokenKind::Identifier {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                String::from("ParserError: A specification attribute should begin with an identifier"),
+                Position::init_from(spec_name.get_position()),
+            ));
+        }
+        self.match_token(TokenKind::Colon, String::from("ParserError: Expected a `:` after the specification attribute"));
+
+        let spec_name_string = self.source.get_text_from_position(spec_name.get_position());
+        let spec_bytecode = APICA_SPECIFICATIONS.get(spec_name_string.as_str());
+        if spec_bytecode.is_none() {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                format!("ParserError: An incorrect specification attribute was found `{}`", spec_name_string),
+                Position::init_from(spec_name.get_position()),
+            ));
+
+            return None;
+        }
+
+        let bytecode = spec_bytecode.unwrap();
+        match bytecode {
+            ApicaSpecificationBytecode::Title => Some(self.parse_data_string(*bytecode, "title")),
+            ApicaSpecificationBytecode::Id => Some(self.parse_data_string(*bytecode, "id")),
+            ApicaSpecificationBytecode::Version => Some(self.parse_data_string(*bytecode, "version")),
+            ApicaSpecificationBytecode::LoggerActivation => Some(self.parse_data_bool(*bytecode, "logger")),
+            ApicaSpecificationBytecode::WindowWidth => Some(self.parse_data_u32(*bytecode, "width")),
+            ApicaSpecificationBytecode::WindowHeight => Some(self.parse_data_u32(*bytecode, "height")),
+
+            _ => {
+                self.diag_bag.add(Diagnostic::init_complete(
+                    DiagnosticKind::Error,
+                    format!("ParserError: An incorrect specification attribute was found `{}`", spec_name_string),
+                    Position::init_from(spec_name.get_position()),
+                ));
+                None
+            },
+        }
+    }
+
+    fn parse_data_string(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {
+        let value = self.parse_statement(ParserModifier::InnerScope);
+        let position = Position::init_from(value.get_position());
+        if let Node::Literal(literal) = value {
+            if let Value::String(string) = literal.get_literal() {
+                return Node::DataString(NodeDataString::init(
+                    Position::init_from(&position),
+                    bytecode,
+                    string.get_value().as_ref().unwrap().clone()
+                ));
+            }
+        }
+
+        self.diag_bag.add(Diagnostic::init_complete(
+            DiagnosticKind::Error,
+            format!("ParserError: `{name}` specification attribute should be followed by a string literal"),
+            Position::init_from(&position),
+        ));
+        Node::Bad(NodeBad::init(Position::init_from(&position)))
+    }
+
+    fn parse_data_u32(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {
+        let value = self.parse_statement(ParserModifier::InnerScope);
+        let position = Position::init_from(value.get_position());
+        if let Node::Literal(literal) = value {
+            if let Value::U32(u32) = literal.get_literal() {
+                return Node::DataU32(NodeDataU32::init(
+                    Position::init_from(&position),
+                    bytecode,
+                    u32.get_value().unwrap(),
+                ));
+            }
+        }
+
+        self.diag_bag.add(Diagnostic::init_complete(
+            DiagnosticKind::Error,
+            format!("ParserError: `{name}` specification attribute should be followed by a u32 literal"),
+            Position::init_from(&position),
+        ));
+        Node::Bad(NodeBad::init(Position::init_from(&position)))
+    }
+
+    fn parse_data_bool(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {
+        let value = self.parse_statement(ParserModifier::InnerScope);
+        let position = Position::init_from(value.get_position());
+        if let Node::Literal(literal) = value {
+            if let Value::Bool(bool) = literal.get_literal() {
+                return Node::DataBool(NodeDataBool::init(
+                    Position::init_from(&position),
+                    bytecode,
+                    bool.get_value().unwrap(),
+                ));
+            }
+        }
+
+        self.diag_bag.add(Diagnostic::init_complete(
+            DiagnosticKind::Error,
+            format!("ParserError: `{name}` specification attribute should be followed by a bool literal"),
+            Position::init_from(&position),
+        ));
+        Node::Bad(NodeBad::init(Position::init_from(&position)))
     }
 
     fn perform_lexer(diag_bag: &'a mut DiagnosticBag, source: &'a SourceText) -> Vec<Token> {

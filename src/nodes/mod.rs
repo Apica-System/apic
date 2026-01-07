@@ -19,3 +19,4 @@ pub mod function_call;
 pub mod parameter;
 pub mod if_else;
 pub mod _while;
+pub mod data;

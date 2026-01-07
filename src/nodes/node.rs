@@ -5,6 +5,10 @@ use crate::nodes::_while::NodeWhile;
 use crate::nodes::bad::NodeBad;
 use crate::nodes::binary_op::NodeBinaryOp;
 use crate::nodes::compound::NodeCompound;
+use crate::nodes::data::bool::NodeDataBool;
+use crate::nodes::data::specs::NodeDataSpecifications;
+use crate::nodes::data::string::NodeDataString;
+use crate::nodes::data::u32::NodeDataU32;
 use crate::nodes::entrypoint::NodeEntrypoint;
 use crate::nodes::eof::NodeEndOfFile;
 use crate::nodes::function_call::NodeFunctionCall;
@@ -47,6 +51,11 @@ pub enum Node {
     
     IfElse(Box<NodeIfElse>),
     While(Box<NodeWhile>),
+    
+    DataSpecs(NodeDataSpecifications),
+    DataString(NodeDataString),
+    DataU32(NodeDataU32),
+    DataBool(NodeDataBool),
 }
 
 impl Node {
@@ -78,6 +87,11 @@ impl Node {
             
             Node::IfElse(if_else) => if_else.get_position(),
             Node::While(while_) => while_.get_position(),
+            
+            Node::DataSpecs(data_specs) => data_specs.get_position(),
+            Node::DataString(data_string) => data_string.get_position(),
+            Node::DataU32(data_u32) => data_u32.get_position(),
+            Node::DataBool(data_bool) => data_bool.get_position(),
         }
     }
     
@@ -109,6 +123,11 @@ impl Node {
             
             Node::IfElse(if_else) => if_else.show(indent, end),
             Node::While(while_) => while_.show(indent, end),
+            
+            Node::DataSpecs(data_specs) => data_specs.show(indent, end),
+            Node::DataString(data_string) => data_string.show(indent, end),
+            Node::DataU32(data_u32) => data_u32.show(indent, end),
+            Node::DataBool(data_bool) => data_bool.show(indent, end),
         }
     }
 }

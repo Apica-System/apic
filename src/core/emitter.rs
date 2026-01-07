@@ -1,11 +1,15 @@
 ﻿use std::fs::{remove_file, File};
-use apica_common::bytecodes::{ApicaBytecode, ApicaTypeBytecode};
+use apica_common::bytecodes::{ApicaBytecode, ApicaSpecificationBytecode, ApicaTypeBytecode};
 use apica_common::values::value::Value;
 use bitflags::bitflags;
 use crate::nodes::_return::NodeReturn;
 use crate::nodes::_while::NodeWhile;
 use crate::nodes::binary_op::NodeBinaryOp;
 use crate::nodes::compound::NodeCompound;
+use crate::nodes::data::bool::NodeDataBool;
+use crate::nodes::data::specs::NodeDataSpecifications;
+use crate::nodes::data::string::NodeDataString;
+use crate::nodes::data::u32::NodeDataU32;
 use crate::nodes::entrypoint::NodeEntrypoint;
 use crate::nodes::function_call::NodeFunctionCall;
 use crate::nodes::global_scope::NodeGlobalScope;
@@ -106,6 +110,11 @@ impl<'a> Emitter<'a> {
 
             Node::IfElse(if_else) => self.emit_if_else(if_else, mode),
             Node::While(while_node) => self.emit_while(while_node, mode),
+
+            Node::DataSpecs(data_specs) => self.emit_specs(data_specs),
+            Node::DataString(data_string) => self.emit_data_string(data_string),
+            Node::DataU32(data_u32) => self.emit_data_u32(data_u32),
+            Node::DataBool(data_bool) => self.emit_data_bool(data_bool),
         }
     }
 
@@ -338,5 +347,28 @@ impl<'a> Emitter<'a> {
         write_u64(&mut self.output_file, ApicaBytecode::While as u64, &mut self.diag_bag);
         self.emit_node(while_node.get_condition(), mode);
         self.emit_node(while_node.get_body(), mode);
+    }
+
+    fn emit_specs(&mut self, specs: &NodeDataSpecifications) {
+        for spec in specs.get_nodes() {
+            self.emit_node(spec, EmitterModifier::None);
+        }
+
+        write_u64(&mut self.output_file, ApicaSpecificationBytecode::EndOfSpecification as u64, &mut self.diag_bag);
+    }
+    
+    fn emit_data_string(&mut self, data_string: &NodeDataString) {
+        write_u64(&mut self.output_file, data_string.get_bytecode() as u64, &mut self.diag_bag);
+        write_string(&mut self.output_file, data_string.get_value(), &mut self.diag_bag);
+    }
+    
+    fn emit_data_u32(&mut self, data_u32: &NodeDataU32) {
+        write_u64(&mut self.output_file, data_u32.get_bytecode() as u64, &mut self.diag_bag);
+        write_u32(&mut self.output_file, data_u32.get_value(), &mut self.diag_bag);
+    }
+    
+    fn emit_data_bool(&mut self, data_bool: &NodeDataBool) {
+        write_u64(&mut self.output_file, data_bool.get_bytecode() as u64, &mut self.diag_bag);
+        write_u8(&mut self.output_file, data_bool.get_value() as u8, &mut self.diag_bag);
     }
 }
