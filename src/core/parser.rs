@@ -317,8 +317,6 @@ impl<'a> Parser<'a> {
                 String::from("ParserError: `const` and `var` keywords should be followed by an identifier to initialize a constant or a variable"),
                 Position::init_from(identifier_token.get_position()),
             ));
-
-            return Node::Bad(NodeBad::init(Position::init_from(identifier_token.get_position())));
         }
 
         self.advance();
@@ -335,22 +333,18 @@ impl<'a> Parser<'a> {
                     String::from("ParserError: `const` and `var` keywords need a valid type after `:` (type declaration)"),
                     Position::init_from(value_type.get_position()),
                 ));
-
-                return Node::Bad(NodeBad::init(Position::init_from(value_type.get_position())));
-            }
-
-            self.advance();
-            let type_text = self.source.get_text_from_position(value_type.get_position());
-            if let Some(kind) = APICA_TYPES.get(type_text.as_str()) {
-                value_kind = *kind;
             } else {
-                self.diag_bag.add(Diagnostic::init_complete(
-                    DiagnosticKind::Error,
-                    String::from("ParserError: `const` and `var` keywords need a valid type after `:` (type declaration)"),
-                    Position::init_from(value_type.get_position()),
-                ));
-
-                return Node::Bad(NodeBad::init(Position::init_from(value_type.get_position())));
+                self.advance();
+                let type_text = self.source.get_text_from_position(value_type.get_position());
+                if let Some(kind) = APICA_TYPES.get(type_text.as_str()) {
+                    value_kind = *kind;
+                } else {
+                    self.diag_bag.add(Diagnostic::init_complete(
+                        DiagnosticKind::Error,
+                        String::from("ParserError: `const` and `var` keywords need a valid type after `:` (type declaration)"),
+                        Position::init_from(value_type.get_position()),
+                    ));
+                }
             }
         }
 
@@ -453,8 +447,6 @@ impl<'a> Parser<'a> {
                 String::from("ParserError: Package call (i.e. <package_id>:) should be followed by a var/const call or a function call"),
                 Position::init_from(next.get_position()),
             ));
-
-            return Node::Bad(NodeBad::init(Position::init_from(next.get_position())));
         }
 
         Node::PackageCall(Box::new(NodePackageCall::init(
@@ -580,17 +572,19 @@ impl<'a> Parser<'a> {
                 Position::init_from(spec_name.get_position()),
             ));
 
-            return None;
+            return Some(Node::Bad(NodeBad::init(Position::init_from(
+                spec_name.get_position(),
+            ))));
         }
 
         let bytecode = spec_bytecode.unwrap();
-        match bytecode {
-            ApicaSpecificationBytecode::Title => Some(self.parse_data_string(*bytecode, "title")),
-            ApicaSpecificationBytecode::Id => Some(self.parse_data_string(*bytecode, "id")),
-            ApicaSpecificationBytecode::Version => Some(self.parse_data_string(*bytecode, "version")),
-            ApicaSpecificationBytecode::LoggerActivation => Some(self.parse_data_bool(*bytecode, "logger")),
-            ApicaSpecificationBytecode::WindowWidth => Some(self.parse_data_u32(*bytecode, "width")),
-            ApicaSpecificationBytecode::WindowHeight => Some(self.parse_data_u32(*bytecode, "height")),
+        Some(match bytecode {
+            ApicaSpecificationBytecode::Title => self.parse_data_string(*bytecode, "title"),
+            ApicaSpecificationBytecode::Id => self.parse_data_string(*bytecode, "id"),
+            ApicaSpecificationBytecode::Version => self.parse_data_string(*bytecode, "version"),
+            ApicaSpecificationBytecode::LoggerActivation => self.parse_data_bool(*bytecode, "logger"),
+            ApicaSpecificationBytecode::WindowWidth => self.parse_data_u32(*bytecode, "width"),
+            ApicaSpecificationBytecode::WindowHeight => self.parse_data_u32(*bytecode, "height"),
 
             _ => {
                 self.diag_bag.add(Diagnostic::init_complete(
@@ -598,9 +592,9 @@ impl<'a> Parser<'a> {
                     format!("ParserError: An incorrect specification attribute was found `{}`", spec_name_string),
                     Position::init_from(spec_name.get_position()),
                 ));
-                None
+                Node::Bad(NodeBad::init(Position::init_from(spec_name.get_position())))
             },
-        }
+        })
     }
 
     fn parse_data_string(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {

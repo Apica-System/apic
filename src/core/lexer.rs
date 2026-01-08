@@ -456,6 +456,7 @@ impl<'a> Lexer<'a> {
         self.advance();
         self.advance();
         if is_multiline {
+            let start = self.current_index;
             while self.current_char != '\0' {
                 if self.current_char == '*' {
                     let next = self.source.get_char_at(self.current_index + 1);
@@ -467,6 +468,14 @@ impl<'a> Lexer<'a> {
                 }
 
                 self.advance();
+            }
+
+            if self.current_char == '\0' {
+                self.diag_bag.add(Diagnostic::init_complete(
+                    DiagnosticKind::Error,
+                    String::from("LexerError: Unterminated multi-line comment"),
+                    Position::init(start, self.current_index - start),
+                ));
             }
         } else {
             while self.current_char != '\n' && self.current_char != '\0' {

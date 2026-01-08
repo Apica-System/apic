@@ -94,10 +94,12 @@ pub fn build_bytecode_file(options: &Vec<ApicOption>) -> bool {
 
     
     // Analyze and emit the AST
-    let mut analyzer = Analyzer::init(&mut diag_bag);
-    analyzer.analyze(&mut root);
-    if let Some(mut emitter) = Emitter::init(&mut diag_bag, &output_filepath) {
-        emitter.emit(&mut root);
+    if !diag_bag.has_any_error() {
+        let mut analyzer = Analyzer::init(&mut diag_bag);
+        analyzer.analyze(&mut root);
+        if let Some(mut emitter) = Emitter::init(&mut diag_bag, &output_filepath) {
+            emitter.emit(&mut root);
+        }
     }
     
     
