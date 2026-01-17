@@ -1,6 +1,7 @@
 ﻿use crate::nodes::parameter::NodeParameter;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeFunctionCall {
     position: Position,
     name: String,
@@ -35,5 +36,9 @@ impl NodeFunctionCall {
 
     pub fn get_parameters(&self) -> &Vec<NodeParameter> {
         &self.parameters
+    }
+    
+    pub fn get_mut_parameters(&mut self) -> &mut Vec<NodeParameter> {
+        &mut self.parameters
     }
 }

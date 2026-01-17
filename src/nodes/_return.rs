@@ -1,6 +1,7 @@
 ﻿use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeReturn {
     position: Position,
     expression: Option<Node>,

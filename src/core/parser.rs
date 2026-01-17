@@ -9,6 +9,7 @@ use crate::core::lexer::Lexer;
 use crate::nodes::_break::NodeBreak;
 use crate::nodes::_continue::NodeContinue;
 use crate::nodes::_return::NodeReturn;
+use crate::nodes::_typeof::NodeTypeof;
 use crate::nodes::_while::NodeWhile;
 use crate::nodes::bad::NodeBad;
 use crate::nodes::binary_op::NodeBinaryOp;
@@ -113,14 +114,14 @@ impl<'a> Parser<'a> {
                 expression = Some(self.parse_statement(new_modifier));
             }
 
-            return Some(Node::Return(Box::new(NodeReturn::init(Position::init_from(current.get_position()), expression))));
+            return Some(Node::Return(Box::new(NodeReturn::init(current.get_position().clone(), expression))));
         } else if modifier.contains(ParserModifier::LoopScope) {
             if *current.get_kind() == TokenKind::Break {
                 self.advance();
-                return Some(Node::Break(NodeBreak::init(Position::init_from(current.get_position()))));
+                return Some(Node::Break(NodeBreak::init(current.get_position().clone())));
             } else if *current.get_kind() == TokenKind::Continue {
                 self.advance();
-                return Some(Node::Continue(NodeContinue::init(Position::init_from(current.get_position()))));
+                return Some(Node::Continue(NodeContinue::init(current.get_position().clone())));
             }
         }
 
@@ -136,7 +137,7 @@ impl<'a> Parser<'a> {
                 let current = self.get_and_advance();
                 let operand = self.parse_binary_unary_expression(unary_precedence);
                 Node::UnaryOp(Box::new(NodeUnaryOp::init(
-                    Position::init_from(current.get_position()),
+                    current.get_position().clone(),
                     *current.get_kind(),
                     operand,
                 )))
@@ -156,7 +157,7 @@ impl<'a> Parser<'a> {
 
             if binary_precedence == 14 {
                 return Node::BinaryOp(Box::new(NodeBinaryOp::init(
-                    Position::init_from(current.get_position()),
+                    current.get_position().clone(),
                     *current.get_kind(),
                     left,
                     None,
@@ -165,7 +166,7 @@ impl<'a> Parser<'a> {
 
             let right = self.parse_binary_unary_expression(binary_precedence);
             left = Node::BinaryOp(Box::new(NodeBinaryOp::init(
-                Position::init_from(current.get_position()),
+                current.get_position().clone(),
                 *current.get_kind(),
                 left,
                 Some(right),
@@ -179,21 +180,21 @@ impl<'a> Parser<'a> {
     fn parse_primary_expression(&mut self) -> Node {
         let current = self.get_and_advance();
         match current.get_kind() {
-            TokenKind::EndOfFile => Node::EndOfFile(NodeEndOfFile::init(Position::init_from(current.get_position()))),
-            TokenKind::Bad => Node::Bad(NodeBad::init(Position::init_from(current.get_position()))),
+            TokenKind::EndOfFile => Node::EndOfFile(NodeEndOfFile::init(current.get_position().clone())),
+            TokenKind::Bad => Node::Bad(NodeBad::init(current.get_position().clone())),
 
             TokenKind::Null => Node::Literal(NodeLiteral::init(
-                Position::init_from(current.get_position()),
+                current.get_position().clone(),
                 Value::Null(ValueNull::init()),
             )),
 
             TokenKind::False => Node::Literal(NodeLiteral::init(
-                Position::init_from(current.get_position()),
+                current.get_position().clone(),
                 Value::Bool(ValueBool::init_with(false)),
             )),
 
             TokenKind::True => Node::Literal(NodeLiteral::init(
-                Position::init_from(current.get_position()),
+                current.get_position().clone(),
                 Value::Bool(ValueBool::init_with(true)),
             )),
 
@@ -223,14 +224,16 @@ impl<'a> Parser<'a> {
                 _ => self.parse_var_const_call(current),
             },
 
+            TokenKind::Typeof => self.parse_typeof(current),
+
             _ => {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
-                    String::from("ParserError: Incorrect token found"),
-                    Position::init_from(current.get_position()),
+                    format!("ParserError: Incorrect token found `{:?}`", current.get_kind()),
+                    current.get_position().clone(),
                 ));
 
-                Node::Bad(NodeBad::init(Position::init_from(current.get_position())))
+                Node::Bad(NodeBad::init(current.get_position().clone()))
             },
         }
     }
@@ -271,9 +274,9 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: Unknown entrypoint identifier found (accepted are `init`, `update` and `quit`)"),
-                Position::init_from(entry_token.get_position()),
+                entry_token.get_position().clone(),
             ));
-            return Node::Bad(NodeBad::init(Position::init_from(entry_token.get_position())));
+            return Node::Bad(NodeBad::init(entry_token.get_position().clone()));
         }
 
         self.skip_new_lines();
@@ -282,10 +285,10 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: All entrypoint should be followed by a block of statements"),
-                Position::init_from(entry_token.get_position()),
+                entry_token.get_position().clone(),
             ));
 
-            return Node::Bad(NodeBad::init(Position::init_from(entry_token.get_position())));
+            return Node::Bad(NodeBad::init(entry_token.get_position().clone()));
         }
 
         let body = self.parse_statement(ParserModifier::InnerScope);
@@ -293,14 +296,14 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: Cannot declare an entrypoint out of the main global scope"),
-                Position::init_from(entry_token.get_position()),
+                entry_token.get_position().clone(),
             ));
 
-            return Node::Bad(NodeBad::init(Position::init_from(entry_token.get_position())));
+            return Node::Bad(NodeBad::init(entry_token.get_position().clone()));
         }
 
         Node::Entrypoint(Box::new(NodeEntrypoint::init(
-            Position::init_from(entry_token.get_position()),
+            entry_token.get_position().clone(),
             entry_bytecode.unwrap(),
             body
         )))
@@ -315,7 +318,7 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: `const` and `var` keywords should be followed by an identifier to initialize a constant or a variable"),
-                Position::init_from(identifier_token.get_position()),
+                identifier_token.get_position().clone(),
             ));
         }
 
@@ -331,7 +334,7 @@ impl<'a> Parser<'a> {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
                     String::from("ParserError: `const` and `var` keywords need a valid type after `:` (type declaration)"),
-                    Position::init_from(value_type.get_position()),
+                    value_type.get_position().clone(),
                 ));
             } else {
                 self.advance();
@@ -342,7 +345,7 @@ impl<'a> Parser<'a> {
                     self.diag_bag.add(Diagnostic::init_complete(
                         DiagnosticKind::Error,
                         String::from("ParserError: `const` and `var` keywords need a valid type after `:` (type declaration)"),
-                        Position::init_from(value_type.get_position()),
+                        value_type.get_position().clone(),
                     ));
                 }
             }
@@ -354,11 +357,11 @@ impl<'a> Parser<'a> {
             self.advance();
             self.parse_statement(ParserModifier::InnerScope)
         } else {
-            Node::Literal(NodeLiteral::init(Position::init_from(identifier_token.get_position()), Value::Null(ValueNull::init())))
+            Node::Literal(NodeLiteral::init(identifier_token.get_position().clone(), Value::Null(ValueNull::init())))
         };
 
         Node::VarConstDecl(Box::new(NodeVarConstDecl::init(
-            Position::init_from(identifier_token.get_position()),
+            identifier_token.get_position().clone(),
             String::from(id_name),
             is_const,
             value_kind,
@@ -366,11 +369,43 @@ impl<'a> Parser<'a> {
         )))
     }
 
+    fn parse_typeof(&mut self, typeof_token: Token) -> Node {
+        self.match_token(TokenKind::Less, String::from("ParserError: Expected `<` to begin a typeof statement"));
+
+        let type_token = Token::init_from(self.get());
+        if *type_token.get_kind() != TokenKind::Identifier {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                String::from("ParserError: Expected an identifier to declare a valid type"),
+                type_token.get_position().clone(),
+            ));
+        }
+        self.advance();
+
+        let type_text = self.source.get_text_from_position(type_token.get_position());
+        let value_kind = if let Some(kind) = APICA_TYPES.get(type_text.as_str()) {
+            kind
+        } else {
+            self.diag_bag.add(Diagnostic::init_complete(
+                DiagnosticKind::Error,
+                String::from("ParserError: `const` and `var` keywords need a valid type after `:` (type declaration)"),
+                type_token.get_position().clone(),
+            ));
+            &ApicaTypeBytecode::Any
+        };
+
+        self.match_token(TokenKind::Greater, String::from("ParserError: Expected `>` to end a typeof statement"));
+        Node::Typeof(Box::from(NodeTypeof::init(
+            typeof_token.get_position().clone(),
+            *value_kind,
+        )))
+    }
+
     fn parse_global_scope(&mut self, modifier: ParserModifier) -> Node {
         let global_token = self.get_and_advance();
         let scoped = self.parse_statement(modifier | ParserModifier::InnerScope);
         Node::GlobalScope(Box::new(NodeGlobalScope::init(
-            Position::init_from(global_token.get_position()),
+            global_token.get_position().clone(),
             scoped
         )))
     }
@@ -393,7 +428,7 @@ impl<'a> Parser<'a> {
         } else { None };
 
         Node::IfElse(Box::new(NodeIfElse::init(
-            Position::init_from(if_token.get_position()),
+            if_token.get_position().clone(),
             condition,
             if_body,
             else_body
@@ -411,7 +446,7 @@ impl<'a> Parser<'a> {
 
         let body = self.parse_statement(modifier | ParserModifier::InnerScope | ParserModifier::FullStatement | ParserModifier::LoopScope);
         Node::While(Box::new(NodeWhile::init(
-            Position::init_from(while_token.get_position()),
+            while_token.get_position().clone(),
             condition,
             body
         )))
@@ -445,12 +480,12 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: Package call (i.e. <package_id>:) should be followed by a var/const call or a function call"),
-                Position::init_from(next.get_position()),
+                next.get_position().clone(),
             ));
         }
 
         Node::PackageCall(Box::new(NodePackageCall::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             String::from(name),
             next
         )))
@@ -473,7 +508,7 @@ impl<'a> Parser<'a> {
 
         self.match_token(TokenKind::RightParenthesis, String::from("ParserError: Expected `)` to end a function call"));
         Node::FuncCall(NodeFunctionCall::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             String::from(func_name),
             parameters
         ))
@@ -482,13 +517,13 @@ impl<'a> Parser<'a> {
     fn parse_parameter(&mut self) -> NodeParameter {
         let current = Token::init_from(self.get());
         let expression = self.parse_statement(ParserModifier::InnerScope);
-        NodeParameter::init(Position::init_from(current.get_position()), expression)
+        NodeParameter::init(current.get_position().clone(), expression)
     }
 
     fn parse_var_const_call(&mut self, token: Token) -> Node {
         let var_const_name = self.source.get_text_from_position(token.get_position());
         Node::VarConstCall(NodeVarConstCall::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             String::from(var_const_name)
         ))
     }
@@ -502,10 +537,10 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: `specs` should be followed by a block of specifications"),
-                Position::init_from(specs_token.get_position()),
+                specs_token.get_position().clone(),
             ));
 
-            return Node::Bad(NodeBad::init(Position::init_from(specs_token.get_position())));
+            return Node::Bad(NodeBad::init(specs_token.get_position().clone()));
         }
         self.advance();
         self.skip_new_lines();
@@ -525,10 +560,10 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: `specs` block of specifications should be closed by `}`"),
-                Position::init_from(right_brace_token.get_position()),
+                right_brace_token.get_position().clone(),
             ));
 
-            return Node::Bad(NodeBad::init(Position::init_from(specs_token.get_position())));
+            return Node::Bad(NodeBad::init(specs_token.get_position().clone()));
         }
         self.advance();
 
@@ -536,14 +571,14 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: Cannot declare an entrypoint out of the main global scope"),
-                Position::init_from(specs_token.get_position()),
+                specs_token.get_position().clone(),
             ));
 
-            return Node::Bad(NodeBad::init(Position::init_from(specs_token.get_position())));
+            return Node::Bad(NodeBad::init(specs_token.get_position().clone()));
         }
 
         Node::DataSpecs(NodeDataSpecifications::init(
-            Position::init_from(specs_token.get_position()),
+            specs_token.get_position().clone(),
             specs
         ))
     }
@@ -558,7 +593,7 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("ParserError: A specification attribute should begin with an identifier"),
-                Position::init_from(spec_name.get_position()),
+                spec_name.get_position().clone(),
             ));
         }
         self.match_token(TokenKind::Colon, String::from("ParserError: Expected a `:` after the specification attribute"));
@@ -569,12 +604,10 @@ impl<'a> Parser<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 format!("ParserError: An incorrect specification attribute was found `{}`", spec_name_string),
-                Position::init_from(spec_name.get_position()),
+                spec_name.get_position().clone(),
             ));
 
-            return Some(Node::Bad(NodeBad::init(Position::init_from(
-                spec_name.get_position(),
-            ))));
+            return Some(Node::Bad(NodeBad::init(spec_name.get_position().clone())));
         }
 
         let bytecode = spec_bytecode.unwrap();
@@ -590,20 +623,20 @@ impl<'a> Parser<'a> {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
                     format!("ParserError: An incorrect specification attribute was found `{}`", spec_name_string),
-                    Position::init_from(spec_name.get_position()),
+                    spec_name.get_position().clone(),
                 ));
-                Node::Bad(NodeBad::init(Position::init_from(spec_name.get_position())))
+                Node::Bad(NodeBad::init(spec_name.get_position().clone()))
             },
         })
     }
 
     fn parse_data_string(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {
         let value = self.parse_statement(ParserModifier::InnerScope);
-        let position = Position::init_from(value.get_position());
+        let position = value.get_position().clone();
         if let Node::Literal(literal) = value {
             if let Value::String(string) = literal.get_literal() {
                 return Node::DataString(NodeDataString::init(
-                    Position::init_from(&position),
+                    position,
                     bytecode,
                     string.get_value().as_ref().unwrap().clone()
                 ));
@@ -613,18 +646,18 @@ impl<'a> Parser<'a> {
         self.diag_bag.add(Diagnostic::init_complete(
             DiagnosticKind::Error,
             format!("ParserError: `{name}` specification attribute should be followed by a string literal"),
-            Position::init_from(&position),
+            position.clone(),
         ));
-        Node::Bad(NodeBad::init(Position::init_from(&position)))
+        Node::Bad(NodeBad::init(position))
     }
 
     fn parse_data_u32(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {
         let value = self.parse_statement(ParserModifier::InnerScope);
-        let position = Position::init_from(value.get_position());
+        let position = value.get_position().clone();
         if let Node::Literal(literal) = value {
             if let Value::U32(u32) = literal.get_literal() {
                 return Node::DataU32(NodeDataU32::init(
-                    Position::init_from(&position),
+                    position,
                     bytecode,
                     u32.get_value().unwrap(),
                 ));
@@ -634,18 +667,18 @@ impl<'a> Parser<'a> {
         self.diag_bag.add(Diagnostic::init_complete(
             DiagnosticKind::Error,
             format!("ParserError: `{name}` specification attribute should be followed by a u32 literal"),
-            Position::init_from(&position),
+            position.clone(),
         ));
-        Node::Bad(NodeBad::init(Position::init_from(&position)))
+        Node::Bad(NodeBad::init(position))
     }
 
     fn parse_data_bool(&mut self, bytecode: ApicaSpecificationBytecode, name: &str) -> Node {
         let value = self.parse_statement(ParserModifier::InnerScope);
-        let position = Position::init_from(value.get_position());
+        let position = value.get_position().clone();
         if let Node::Literal(literal) = value {
             if let Value::Bool(bool) = literal.get_literal() {
                 return Node::DataBool(NodeDataBool::init(
-                    Position::init_from(&position),
+                    position,
                     bytecode,
                     bool.get_value().unwrap(),
                 ));
@@ -655,9 +688,9 @@ impl<'a> Parser<'a> {
         self.diag_bag.add(Diagnostic::init_complete(
             DiagnosticKind::Error,
             format!("ParserError: `{name}` specification attribute should be followed by a bool literal"),
-            Position::init_from(&position),
+            position.clone(),
         ));
-        Node::Bad(NodeBad::init(Position::init_from(&position)))
+        Node::Bad(NodeBad::init(position))
     }
 
     fn perform_lexer(diag_bag: &'a mut DiagnosticBag, source: &'a SourceText) -> Vec<Token> {
@@ -704,13 +737,15 @@ impl<'a> Parser<'a> {
     }
 
     fn match_token(&mut self, expected: TokenKind, error_text: String) {
-        let actual = self.get_and_advance();
+        let actual = self.get();
         if *actual.get_kind() != expected {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 error_text,
-                Position::init_from(actual.get_position()),
+                actual.get_position().clone(),
             ))
+        } else {
+            self.advance();
         }
     }
 
@@ -719,7 +754,7 @@ impl<'a> Parser<'a> {
         let integer = decode_integer(&text);
 
         Node::Literal(NodeLiteral::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             Value::U32(ValueU32::init_with(integer)),
         ))
     }
@@ -729,7 +764,7 @@ impl<'a> Parser<'a> {
         let integer = decode_binary_integer(&text);
 
         Node::Literal(NodeLiteral::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             Value::U32(ValueU32::init_with(integer)),
         ))
     }
@@ -739,7 +774,7 @@ impl<'a> Parser<'a> {
         let integer = decode_octal_integer(&text);
 
         Node::Literal(NodeLiteral::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             Value::U32(ValueU32::init_with(integer)),
         ))
     }
@@ -749,7 +784,7 @@ impl<'a> Parser<'a> {
         let integer = decode_hexadecimal_integer(&text);
 
         Node::Literal(NodeLiteral::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             Value::U32(ValueU32::init_with(integer)),
         ))
     }
@@ -759,7 +794,7 @@ impl<'a> Parser<'a> {
         let string = decode_string(&text);
 
         Node::Literal(NodeLiteral::init(
-            Position::init_from(token.get_position()),
+            token.get_position().clone(),
             Value::String(ValueString::init_with(string)),
         ))
     }

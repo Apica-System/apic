@@ -7,11 +7,23 @@ pub enum OptionKind {
     Init, Build, Help, Version,
 
     SourceFile, OutputFile,
+    
+    ShowNodes, NoOpt,
 }
 
 pub struct ApicOption {
     kind: OptionKind,
     value: String,
+}
+
+pub fn contain_option_kind(options: &Vec<ApicOption>, option_kind: OptionKind) -> bool {
+    for option in options {
+        if *option.get_kind() == option_kind {
+            return true;
+        }
+    }
+    
+    false
 }
 
 impl ApicOption {
@@ -53,6 +65,8 @@ pub fn handle_options() -> Vec<ApicOption> {
                 match arg.as_str() {
                     "-i" => awaiting = Some(OptionKind::SourceFile),
                     "-o" => awaiting = Some(OptionKind::OutputFile),
+                    "--nodes" => options.push(ApicOption::init(OptionKind::ShowNodes, String::new())),
+                    "--no-opt" => options.push(ApicOption::init(OptionKind::NoOpt, String::new())),
 
                     _ => {
                         options.insert(0, ApicOption::init(OptionKind::Bad, String::from("apic error: invalid option found. Use `apic help` to see how to use the apica compiler")));

@@ -20,3 +20,4 @@ pub mod parameter;
 pub mod if_else;
 pub mod _while;
 pub mod data;
+pub mod _typeof;

@@ -2,6 +2,7 @@
 use crate::utils::position::Position;
 use crate::utils::token::TokenKind;
 
+#[derive(Clone)]
 pub struct NodeBinaryOp {
     position: Position,
     operator: TokenKind,
@@ -40,7 +41,23 @@ impl NodeBinaryOp {
         &self.left
     }
     
+    pub fn set_left(&mut self, new_left: Node) {
+        self.left = new_left;
+    }
+
+    pub fn get_mut_left(&mut self) -> &mut Node {
+        &mut self.left
+    }
+    
     pub fn get_right(&self) -> &Option<Node> {
         &self.right
+    }
+
+    pub fn get_mut_right(&mut self) -> &mut Option<Node> {
+        &mut self.right
+    }
+
+    pub fn set_right(&mut self, new_right: Node) {
+        self.right = Some(new_right);
     }
 }

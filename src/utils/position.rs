@@ -1,4 +1,5 @@
-﻿pub struct Position {
+﻿#[derive(Clone)]
+pub struct Position {
     start: usize,
     length: usize,
 }
@@ -6,10 +7,6 @@
 impl Position {
     pub fn init(start: usize, length: usize) -> Position {
         Position { start, length }
-    }
-
-    pub fn init_from(pos: &Position) -> Position {
-        Position { start: pos.start, length: pos.length }
     }
 
     pub fn get_start(&self) -> usize {

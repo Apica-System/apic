@@ -1,6 +1,7 @@
 ﻿use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodePackageCall {
     position: Position,
     name: String,
@@ -32,5 +33,9 @@ impl NodePackageCall {
     
     pub fn get_contained(&self) -> &Node {
         &self.contained
+    }
+
+    pub fn get_mut_contained(&mut self) -> &mut Node {
+        &mut self.contained
     }
 }

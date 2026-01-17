@@ -2,6 +2,7 @@
 use crate::utils::position::Position;
 use apica_common::bytecodes::ApicaEntrypointBytecode;
 
+#[derive(Clone)]
 pub struct NodeEntrypoint {
     position: Position,
     entry: ApicaEntrypointBytecode,

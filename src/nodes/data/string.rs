@@ -1,6 +1,7 @@
 ﻿use apica_common::bytecodes::ApicaSpecificationBytecode;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeDataString {
     position: Position,
     bytecode: ApicaSpecificationBytecode,

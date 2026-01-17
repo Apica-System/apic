@@ -2,6 +2,7 @@
 use crate::utils::position::Position;
 use crate::utils::token::TokenKind;
 
+#[derive(Clone)]
 pub struct NodeUnaryOp {
     position: Position,
     operator: TokenKind,
@@ -33,5 +34,13 @@ impl NodeUnaryOp {
 
     pub fn get_operand(&self) -> &Node {
         &self.operand
+    }
+
+    pub fn get_mut_operand(&mut self) -> &mut Node {
+        &mut self.operand
+    }
+
+    pub fn set_operand(&mut self, new_node: Node) {
+        self.operand = new_node;
     }
 }

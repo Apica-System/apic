@@ -1,6 +1,7 @@
 ﻿use crate::nodes::_break::NodeBreak;
 use crate::nodes::_continue::NodeContinue;
 use crate::nodes::_return::NodeReturn;
+use crate::nodes::_typeof::NodeTypeof;
 use crate::nodes::_while::NodeWhile;
 use crate::nodes::bad::NodeBad;
 use crate::nodes::binary_op::NodeBinaryOp;
@@ -24,6 +25,7 @@ use crate::nodes::var_const_call::NodeVarConstCall;
 use crate::nodes::var_const_decl::NodeVarConstDecl;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub enum Node {
     Bad(NodeBad),
     EndOfFile(NodeEndOfFile),
@@ -51,6 +53,8 @@ pub enum Node {
     
     IfElse(Box<NodeIfElse>),
     While(Box<NodeWhile>),
+    
+    Typeof(Box<NodeTypeof>),
     
     DataSpecs(NodeDataSpecifications),
     DataString(NodeDataString),
@@ -88,6 +92,8 @@ impl Node {
             Node::IfElse(if_else) => if_else.get_position(),
             Node::While(while_) => while_.get_position(),
             
+            Node::Typeof(type_of) => type_of.get_position(),
+            
             Node::DataSpecs(data_specs) => data_specs.get_position(),
             Node::DataString(data_string) => data_string.get_position(),
             Node::DataU32(data_u32) => data_u32.get_position(),
@@ -123,6 +129,8 @@ impl Node {
             
             Node::IfElse(if_else) => if_else.show(indent, end),
             Node::While(while_) => while_.show(indent, end),
+            
+            Node::Typeof(type_of) => type_of.show(indent, end),
             
             Node::DataSpecs(data_specs) => data_specs.show(indent, end),
             Node::DataString(data_string) => data_string.show(indent, end),

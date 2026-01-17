@@ -1,6 +1,7 @@
 ﻿use apica_common::values::value::Value;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeLiteral {
     position: Position,
     literal: Value,
@@ -23,5 +24,9 @@ impl NodeLiteral {
 
     pub fn get_literal(&self) -> &Value {
         &self.literal
+    }
+    
+    pub fn get_mut_literal(&mut self) -> &mut Value {
+        &mut self.literal
     }
 }

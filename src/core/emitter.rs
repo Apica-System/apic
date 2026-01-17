@@ -3,6 +3,7 @@ use apica_common::bytecodes::{ApicaBytecode, ApicaSpecificationBytecode, ApicaTy
 use apica_common::values::value::Value;
 use bitflags::bitflags;
 use crate::nodes::_return::NodeReturn;
+use crate::nodes::_typeof::NodeTypeof;
 use crate::nodes::_while::NodeWhile;
 use crate::nodes::binary_op::NodeBinaryOp;
 use crate::nodes::compound::NodeCompound;
@@ -26,9 +27,8 @@ use crate::nodes::var_const_decl::NodeVarConstDecl;
 use crate::utils::builtins::{APICA_BUILTIN_CONSTANTS, APICA_BUILTIN_FUNCTIONS};
 use crate::utils::diagnostic::{Diagnostic, DiagnosticKind};
 use crate::utils::diagnostic_bag::DiagnosticBag;
-use crate::utils::position::Position;
 use crate::utils::token::TokenKind;
-use crate::utils::writer::{write_string, write_u32, write_u64, write_u8};
+use crate::utils::writer::{write_string, write_u16, write_u32, write_u64, write_u8};
 
 bitflags! {
     #[derive(Copy, Clone)]
@@ -111,6 +111,8 @@ impl<'a> Emitter<'a> {
             Node::IfElse(if_else) => self.emit_if_else(if_else, mode),
             Node::While(while_node) => self.emit_while(while_node, mode),
 
+            Node::Typeof(type_of) => self.emit_typeof(type_of),
+            
             Node::DataSpecs(data_specs) => self.emit_specs(data_specs),
             Node::DataString(data_string) => self.emit_data_string(data_string),
             Node::DataU32(data_u32) => self.emit_data_u32(data_u32),
@@ -144,7 +146,7 @@ impl<'a> Emitter<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("EmitterError: User-defined packages are not yet supported, maybe try APICA"),
-                Position::init_from(package_call.get_position()),
+                package_call.get_position().clone(),
             ));
         }
     }
@@ -170,7 +172,7 @@ impl<'a> Emitter<'a> {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
                     String::from("EmitterError: An unsupported unary operator was found"),
-                    Position::init_from(unary_op.get_position()),
+                    unary_op.get_position().clone(),
                 ));
                 return;
             },
@@ -188,12 +190,13 @@ impl<'a> Emitter<'a> {
             TokenKind::Equals => write_u64(&mut self.output_file, ApicaBytecode::Assign as u64, &mut self.diag_bag),
             TokenKind::EqualsEquals => write_u64(&mut self.output_file, ApicaBytecode::Equals as u64, &mut self.diag_bag),
             TokenKind::Less => write_u64(&mut self.output_file, ApicaBytecode::LessThan as u64, &mut self.diag_bag),
+            TokenKind::As => write_u64(&mut self.output_file, ApicaBytecode::As as u64, &mut self.diag_bag),
 
             _ => {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
                     String::from("EmitterError: An unsupported binary operator was found"),
-                    Position::init_from(binary_op.get_position()),
+                    binary_op.get_position().clone(),
                 ));
                 return;
             },
@@ -237,9 +240,24 @@ impl<'a> Emitter<'a> {
                 write_u64(&mut self.output_file, ApicaTypeBytecode::Null as u64, &mut self.diag_bag);
             },
 
+            Value::U8(u8) => {
+                write_u64(&mut self.output_file, ApicaTypeBytecode::U8 as u64, &mut self.diag_bag);
+                write_u8(&mut self.output_file, u8.get_value().unwrap(), &mut self.diag_bag);
+            },
+
+            Value::U16(u16) => {
+                write_u64(&mut self.output_file, ApicaTypeBytecode::U16 as u64, &mut self.diag_bag);
+                write_u16(&mut self.output_file, u16.get_value().unwrap(), &mut self.diag_bag);
+            },
+
             Value::U32(u32) => {
                 write_u64(&mut self.output_file, ApicaTypeBytecode::U32 as u64, &mut self.diag_bag);
                 write_u32(&mut self.output_file, u32.get_value().unwrap(), &mut self.diag_bag);
+            },
+
+            Value::U64(u64) => {
+                write_u64(&mut self.output_file, ApicaTypeBytecode::U64 as u64, &mut self.diag_bag);
+                write_u64(&mut self.output_file, u64.get_value().unwrap(), &mut self.diag_bag);
             },
 
             Value::String(string) => {
@@ -255,7 +273,7 @@ impl<'a> Emitter<'a> {
             _ => self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("EmitterError: An unsupported literal was found"),
-                Position::init_from(literal.get_position()),
+                literal.get_position().clone(),
             )),
         };
     }
@@ -280,7 +298,7 @@ impl<'a> Emitter<'a> {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
                     format!("EmitterError: Unknown builtin variable/constant -> {}", call.get_name()),
-                    Position::init_from(call.get_position()),
+                    call.get_position().clone(),
                 ));   
             }
         } else {
@@ -298,7 +316,7 @@ impl<'a> Emitter<'a> {
                     self.diag_bag.add(Diagnostic::init_complete(
                         DiagnosticKind::Error,
                         format!("EmitterError: Incorrect number of parameters for function `{}`", call.get_name()),
-                        Position::init_from(call.get_position()),
+                        call.get_position().clone(),
                     ));
                     return;
                 }
@@ -312,7 +330,7 @@ impl<'a> Emitter<'a> {
                 self.diag_bag.add(Diagnostic::init_complete(
                     DiagnosticKind::Error,
                     String::from("EmitterError: Unknown builtin function call"),
-                    Position::init_from(call.get_position()),
+                    call.get_position().clone(),
                 ));
                 return;
             }
@@ -321,7 +339,7 @@ impl<'a> Emitter<'a> {
             self.diag_bag.add(Diagnostic::init_complete(
                 DiagnosticKind::Error,
                 String::from("EmitterError: User-defined functions are not yet supported"),
-                Position::init_from(call.get_position()),
+                call.get_position().clone(),
             ));
         }
     }
@@ -347,6 +365,10 @@ impl<'a> Emitter<'a> {
         write_u64(&mut self.output_file, ApicaBytecode::While as u64, &mut self.diag_bag);
         self.emit_node(while_node.get_condition(), mode);
         self.emit_node(while_node.get_body(), mode);
+    }
+    
+    fn emit_typeof(&mut self, typeof_node: &NodeTypeof) {
+        write_u64(&mut self.output_file, typeof_node.get_value_kind() as u64, &mut self.diag_bag);
     }
 
     fn emit_specs(&mut self, specs: &NodeDataSpecifications) {

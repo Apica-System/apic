@@ -1,6 +1,7 @@
 ﻿use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeDataSpecifications {
     position: Position,
     nodes: Vec<Node>,

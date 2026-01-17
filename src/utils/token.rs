@@ -47,7 +47,7 @@ impl Token {
     }
     
     pub fn init_from(token: &Token) -> Token {
-        Token { kind: token.kind, position: Position::init_from(token.get_position()) }
+        Token { kind: token.kind, position: token.position.clone() }
     }
 
     pub fn get_kind(&self) -> &TokenKind {

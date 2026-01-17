@@ -1,6 +1,7 @@
 ﻿use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeParenthesized {
     position: Position,
     contained: Node,
@@ -27,5 +28,9 @@ impl NodeParenthesized {
     
     pub fn get_contained(&self) -> &Node {
         &self.contained
+    }
+
+    pub fn get_mut_contained(&mut self) -> &mut Node {
+        &mut self.contained
     }
 }

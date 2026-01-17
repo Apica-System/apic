@@ -2,6 +2,7 @@
 use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeVarConstDecl {
     position: Position,
     name: String,
@@ -43,5 +44,13 @@ impl NodeVarConstDecl {
 
     pub fn get_expression(&self) -> &Node {
         &self.expression
+    }
+
+    pub fn get_mut_expression(&mut self) -> &mut Node {
+        &mut self.expression
+    }
+
+    pub fn set_expression(&mut self, new_expression: Node) {
+        self.expression = new_expression;
     }
 }

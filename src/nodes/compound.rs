@@ -1,6 +1,7 @@
 ﻿use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeCompound {
     position: Position,
     nodes: Vec<Node>,

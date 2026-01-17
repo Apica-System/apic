@@ -1,6 +1,7 @@
 ﻿use crate::nodes::node::Node;
 use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeTernaryOp {
     position: Position,
     condition: Node,
@@ -34,11 +35,35 @@ impl NodeTernaryOp {
         &self.condition
     }
 
+    pub fn get_mut_condition(&mut self) -> &mut Node {
+        &mut self.condition
+    }
+    
+    pub fn set_condition(&mut self, new_condition: Node) {
+        self.condition = new_condition;
+    }
+    
     pub fn get_true_expr(&self) -> &Node {
         &self.true_expr
+    }
+    
+    pub fn get_mut_true_expr(&mut self) -> &mut Node {
+        &mut self.true_expr
+    }
+    
+    pub fn set_true_expr(&mut self, new_true_expr: Node) {
+        self.true_expr = new_true_expr;
     }
 
     pub fn get_false_expr(&self) -> &Node {
         &self.false_expr
+    }
+
+    pub fn get_mut_false_expr(&mut self) -> &mut Node {
+        &mut self.false_expr
+    }
+    
+    pub fn set_false_expr(&mut self, new_false_expr: Node) {
+        self.false_expr = new_false_expr;
     }
 }

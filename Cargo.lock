@@ -12,8 +12,8 @@ dependencies = [
 
 [[package]]
 name = "apica_common"
-version = "0.6.1"
-source = "git+https://github.com/Apica-System/common.git#48b9bc8880ff8057155a83f08efa82bdebae8a52"
+version = "0.6.4"
+source = "git+https://github.com/Apica-System/common.git#57303f84537e3202c1d326a9777e5fbf4821b72b"
 dependencies = [
  "bitflags",
  "num_enum",

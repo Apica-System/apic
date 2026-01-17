@@ -4,7 +4,6 @@ use crate::nodes::global_scope::NodeGlobalScope;
 use crate::nodes::node::Node;
 use crate::utils::diagnostic::{Diagnostic, DiagnosticKind};
 use crate::utils::diagnostic_bag::DiagnosticBag;
-use crate::utils::position::Position;
 
 pub struct Analyzer<'a> {
     diag_bag: &'a mut DiagnosticBag,
@@ -102,9 +101,9 @@ impl<'a> Analyzer<'a> {
 
                             init_nodes.insert(0, Node::GlobalScope(Box::new(
                                 NodeGlobalScope::init(
-                                    Position::init_from(extracted[0].get_position()),
+                                    extracted[0].get_position().clone(),
                                     Node::Compound(NodeCompound::init(
-                                        Position::init_from(extracted[0].get_position()),
+                                        extracted[0].get_position().clone(),
                                         extracted,
                                     )),
                                 ),

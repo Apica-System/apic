@@ -66,7 +66,7 @@ impl<'a> Lexer<'a> {
         self.diag_bag.add(Diagnostic::init_complete(
             DiagnosticKind::Error,
             String::from("LexerError: Incorrect character found"),
-            Position::init_from(&err_position),
+            err_position.clone(),
         ));
 
         Token::init(TokenKind::EndOfFile, err_position)
@@ -303,9 +303,9 @@ impl<'a> Lexer<'a> {
         }
 
         if *token.get_kind() == TokenKind::String {
-            return Token::init(TokenKind::FormattedString, Position::init_from(token.get_position()));
+            return Token::init(TokenKind::FormattedString, token.get_position().clone());
         } else if *token.get_kind() == TokenKind::RawString {
-            return Token::init(TokenKind::FormattedRawString, Position::init_from(token.get_position()));
+            return Token::init(TokenKind::FormattedRawString, token.get_position().clone());
         }
 
         self.incorrect_token(start, String::from("LexerError: `$` should be followed by a (raw-)string literal to be formatted"))
@@ -565,7 +565,7 @@ impl<'a> Lexer<'a> {
         self.diag_bag.add(Diagnostic::init_complete(
             DiagnosticKind::Error,
             message,
-            Position::init_from(&err_position),
+            err_position.clone(),
         ));
 
         Token::init(TokenKind::Bad, err_position)
@@ -591,7 +591,7 @@ impl<'a> Lexer<'a> {
         self.diag_bag.add(Diagnostic::init_complete(
             DiagnosticKind::Error,
             message,
-            Position::init_from(&err_position),
+            err_position.clone(),
         ));
 
         Token::init(TokenKind::Bad, err_position)

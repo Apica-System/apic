@@ -1,5 +1,6 @@
 ﻿use crate::utils::position::Position;
 
+#[derive(Clone)]
 pub struct NodeBreak {
     position: Position,
 }

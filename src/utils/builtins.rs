@@ -32,6 +32,9 @@ pub static APICA_KEYWORDS: LazyLock<HashMap<&'static str, TokenKind>> = LazyLock
 
     m.insert("global", TokenKind::Global);
 
+    m.insert("as", TokenKind::As);
+    m.insert("typeof", TokenKind::Typeof);
+
     return m;
 });
 
