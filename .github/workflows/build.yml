@@ -54,10 +54,13 @@ jobs:
         include:
           - os: ubuntu-latest
             ext: ""
+            name: "linux-x64"
           - os: windows-latest
             ext: ".exe"
+            name: "windows-x64"
           - os: macos-latest
             ext: ""
+            name: "macos-x64"
 
     runs-on: ${{ matrix.os }}
 
@@ -82,9 +85,9 @@ jobs:
           mkdir -p dist
 
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cp apic.exe dist/apic-${{ matrix.os }}.exe
+            cp apic.exe dist/apic-${{ matrix.name }}.exe
           else
-            cp apic dist/apic-${{ matrix.os }}
+            cp apic dist/apic-${{ matrix.name }}
           fi
 
       - uses: actions/upload-artifact@v4
