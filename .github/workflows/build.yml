@@ -19,29 +19,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read version from Cargo.toml
+      - name: Read version from header
         id: version
         run: |
-          VERSION=$(grep '^version' Cargo.toml | head -n1 | cut -d '"' -f2)
+          VERSION=$(grep '#define APIC_VERSION' inc/utils/version.hpp | cut -d '"' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Get latest release version
         id: compare
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LATEST=$(gh release view --json tagName -q .tagName 2>/dev/null || echo "v0.0.0")
           LATEST=${LATEST#v}
 
-          echo "Latest release: $LATEST"
-          echo "Cargo version: ${{ steps.version.outputs.version }}"
+          CURRENT="${{ steps.version.outputs.version }}"
 
-          if [ "$(printf '%s\n' "$LATEST" "${{ steps.version.outputs.version }}" | sort -V | tail -n1)" = "${{ steps.version.outputs.version }}" ] \
-             && [ "$LATEST" != "${{ steps.version.outputs.version }}" ]; then
+          echo "Latest release: $LATEST"
+          echo "Current version: $CURRENT"
+
+          if [ "$(printf '%s\n' "$LATEST" "$CURRENT" | sort -V | tail -n1)" = "$CURRENT" ] \
+             && [ "$LATEST" != "$CURRENT" ]; then
             echo "should_release=true" >> $GITHUB_OUTPUT
           else
             echo "should_release=false" >> $GITHUB_OUTPUT
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     runs-on: ubuntu-latest
@@ -49,63 +51,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y make g++
 
-      - name: Run tests (once)
-        run: cargo test --release
+      - name: Build (debug test build)
+        run: make debug
 
   build:
-    needs: [ check-version, test ]
+    needs: [check-version, test]
     if: needs.check-version.outputs.should_release == 'true'
 
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
+            ext: ""
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            target: aarch64-pc-windows-msvc
+            ext: ".exe"
           - os: macos-latest
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            target: aarch64-apple-darwin
+            ext: ""
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
+      - name: Install build tools (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y make g++
+          fi
 
-      - name: Install cross
-        run: cargo install cross
+      - name: Build project
+        run: make build EXT="${{ matrix.ext }}"
 
-      - name: Build
-        run: cross build --release --target ${{ matrix.target }}
-
-      - name: Package binary
+      - name: Prepare artifact
         shell: bash
         run: |
           mkdir -p dist
+
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cp target/${{ matrix.target }}/release/apic.exe dist/apic-${{ matrix.target }}.exe
-          else 
-            cp target/${{ matrix.target }}/release/apic dist/apic-${{ matrix.target }}
+            cp apic.exe dist/apic-${{ matrix.os }}.exe
+          else
+            cp apic dist/apic-${{ matrix.os }}
           fi
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}
+          name: ${{ matrix.os }}
           path: dist/*
 
   release:
-    needs: [ check-version, build ]
+    needs: [check-version, build]
     runs-on: ubuntu-latest
 
     steps:
@@ -116,11 +114,17 @@ jobs:
           path: artifacts
 
       - name: Create GitHub release
-        run: |
-          FILES=$(find artifacts -type f)
-          echo "Uploading files: $FILES"
-          gh release create v${{ needs.check-version.outputs.version }} $FILES \
-            --title "v${{ needs.check-version.outputs.version }}" \
-            --notes "Automated release"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="v${{ needs.check-version.outputs.version }}"
+
+          FILES=$(find artifacts -type f)
+
+          echo "Creating release $VERSION"
+          echo "Files:"
+          echo "$FILES"
+
+          gh release create "$VERSION" $FILES \
+            --title "$VERSION" \
+            --notes "Release automatique"

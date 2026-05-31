@@ -1,4 +1,5 @@
-/target
-.idea
 tests
 *.apb
+*.exe
+.vscode
+temp
