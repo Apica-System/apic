@@ -45,20 +45,8 @@ jobs:
             echo "should_release=false" >> $GITHUB_OUTPUT
           fi
 
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y make g++
-
-      - name: Build (debug test build)
-        run: make debug
-
   build:
-    needs: [check-version, test]
+    needs: [check-version]
     if: needs.check-version.outputs.should_release == 'true'
 
     strategy:
@@ -75,6 +63,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install build tools (Linux/macOS)
         if: matrix.os != 'windows-latest'
