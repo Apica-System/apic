@@ -43,27 +43,27 @@ NodeKind NodeLiteral::getKind() const {
 void NodeLiteral::emit(core::Emitter &emitter) const {
     emitter.writeU64(common::bytecodes::ApicaBytecode::Literal);
     switch (this->value->getKind()) {
-        case common::values::ValueKind::Null:
+        case common::bytecodes::ApicaTypeBytecode::Null:
             emitter.writeU64(common::bytecodes::ApicaTypeBytecode::Null);
             break;
         
-        case common::values::ValueKind::U32: {
+        case common::bytecodes::ApicaTypeBytecode::U32: {
             common::values::ValueU32 *u32 = static_cast<common::values::ValueU32*>(this->value);
             emitter.writeU64(common::bytecodes::ApicaTypeBytecode::U32);
             emitter.writeU32(u32->getValue().value());
         } break;
         
-        case common::values::ValueKind::U64:
+        case common::bytecodes::ApicaTypeBytecode::U64:
             emitter.writeU64(common::bytecodes::ApicaTypeBytecode::U64);
             emitter.writeU64(static_cast<common::values::ValueU64*>(this->value)->getValue().value());
             break;
         
-        case common::values::ValueKind::Bool:
+        case common::bytecodes::ApicaTypeBytecode::Bool:
             emitter.writeU64(common::bytecodes::ApicaTypeBytecode::Bool);
             emitter.writeU8(static_cast<common::values::ValueBool*>(this->value)->getValue().value());
             break;
         
-        case common::values::ValueKind::String:
+        case common::bytecodes::ApicaTypeBytecode::String:
             emitter.writeU64(common::bytecodes::ApicaTypeBytecode::String);
             emitter.writeString(static_cast<common::values::ValueString*>(this->value)->getValue().value());
             break;

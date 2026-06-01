@@ -93,11 +93,6 @@ entry quit {}
             core::Parser parser(source);
             root = parser.parse();
         }
-        
-        if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
-            core::Analyzer analyzer;
-            analyzer.analyze(root);
-        }
 
         if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
             std::optional<std::string> no_opt = apic_options.getOption(core::ApicOptionKind::NoOptimisation);
@@ -105,7 +100,14 @@ entry quit {}
                 core::Optimizer optimizer;
                 root->optimize(optimizer);
             }
+        }
 
+        if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
+            core::Analyzer analyzer;
+            analyzer.analyze(root);
+        }
+
+        if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
             std::optional<std::string> show_nodes = apic_options.getOption(core::ApicOptionKind::ShowNodes);
             if (show_nodes) {
                 std::string indent;

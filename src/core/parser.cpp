@@ -682,7 +682,7 @@ std::optional<nodes::Node*> Parser::parseSpecification() {
 
 nodes::Node *Parser::parseSpecificationDataString(common::bytecodes::ApicaSpecificationBytecode bytecode, const std::string &name) {
     nodes::Node *value = this->parseStatement(ParserModifier::PM_InnerScope);
-    if (value->getKind() != nodes::NodeKind::Literal || static_cast<nodes::NodeLiteral*>(value)->getValue()->getKind() != common::values::ValueKind::String) {
+    if (value->getKind() != nodes::NodeKind::Literal || static_cast<nodes::NodeLiteral*>(value)->getValue()->getKind() != common::bytecodes::ApicaTypeBytecode::String) {
         std::string error_message(utils::PAR_ERROR_SPEC_STRING_INCORRECT);
         error_message += name;
         error_message += '`';
@@ -709,7 +709,7 @@ nodes::Node *Parser::parseSpecificationDataString(common::bytecodes::ApicaSpecif
 
 nodes::Node *Parser::parseSpecificationDataU32(common::bytecodes::ApicaSpecificationBytecode bytecode, const std::string &name) {
     nodes::Node *value = this->parseStatement(ParserModifier::PM_InnerScope);
-    if (value->getKind() != nodes::NodeKind::Literal || static_cast<nodes::NodeLiteral*>(value)->getValue()->getKind() != common::values::ValueKind::U32) {
+    if (value->getKind() != nodes::NodeKind::Literal || static_cast<nodes::NodeLiteral*>(value)->getValue()->getKind() != common::bytecodes::ApicaTypeBytecode::U32) {
         std::string error_message(utils::PAR_ERROR_SPEC_U32_INCORRECT);
         error_message += name;
         error_message += '`';
@@ -736,7 +736,7 @@ nodes::Node *Parser::parseSpecificationDataU32(common::bytecodes::ApicaSpecifica
 
 nodes::Node *Parser::parseSpecificationDataBool(common::bytecodes::ApicaSpecificationBytecode bytecode, const std::string &name) {
     nodes::Node *value = this->parseStatement(ParserModifier::PM_InnerScope);
-    if (value->getKind() != nodes::NodeKind::Literal || static_cast<nodes::NodeLiteral*>(value)->getValue()->getKind() != common::values::ValueKind::Bool) {
+    if (value->getKind() != nodes::NodeKind::Literal || static_cast<nodes::NodeLiteral*>(value)->getValue()->getKind() != common::bytecodes::ApicaTypeBytecode::Bool) {
         std::string error_message(utils::PAR_ERROR_SPEC_BOOL_INCORRECT);
         error_message += name;
         error_message += '`';
