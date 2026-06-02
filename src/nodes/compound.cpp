@@ -40,6 +40,7 @@ void NodeCompound::emit(core::Emitter &emitter) const {
     if (!(emitter.getModifier() & core::EmitterModifier::EM_UnpackCompound))
         emitter.writeU64(common::bytecodes::ApicaBytecode::Compound);
 
+    emitter.writeU64(this->nodes.size());
     emitter.removeModifier(core::EmitterModifier::EM_UnpackCompound);
     for (Node *node : this->nodes)
         node->emit(emitter);
@@ -85,4 +86,9 @@ const std::vector<Node*> &NodeCompound::getNodes() const {
 
 std::vector<Node*> &NodeCompound::getMutableNodes() {
     return this->nodes;
+}
+
+void NodeCompound::emitRoot(core::Emitter &emitter) const {
+    for (Node *node : this->nodes)
+        node->emit(emitter);
 }

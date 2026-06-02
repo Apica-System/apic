@@ -61,15 +61,3 @@ void NodeIfElse::setId() {
 std::optional<nodes::Node*> NodeIfElse::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-Node *NodeIfElse::getIfCondition() const {
-    return this->if_condition;
-}
-
-Node *NodeIfElse::getIfBody() const {
-    return this->if_body;
-}
-
-std::optional<Node*> NodeIfElse::getElseBody() const {
-    return this->else_body;
-}

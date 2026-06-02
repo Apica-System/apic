@@ -65,11 +65,3 @@ std::optional<nodes::Node*> NodeVarConstCall::optimize(core::Optimizer &optimize
 
     return std::nullopt;
 }
-
-std::string NodeVarConstCall::getVarConstName() const {
-    return this->name;
-}
-
-uint64_t NodeVarConstCall::getDeclarationId() const {
-    return this->id;
-}

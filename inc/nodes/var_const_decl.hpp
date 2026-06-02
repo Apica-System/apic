@@ -17,14 +17,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        std::string getVarConstName() const;
-        bool isConstant() const;
-        std::optional<std::string> getVarConstType() const;
-        std::optional<Node*> getInitExpression() const;
-
-        uint64_t getDeclarationId() const;
-        void setDeclarationId(uint64_t id);
     private:
         std::string name;
         uint64_t id;

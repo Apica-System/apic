@@ -59,11 +59,3 @@ std::optional<nodes::Node*> NodePackageCall::optimize(core::Optimizer &optimizer
 
     return optimized;
 }
-
-std::string NodePackageCall::getPackageName() const {
-    return this->package_name;
-}
-
-Node *NodePackageCall::getContainedNode() const {
-    return this->contained;
-}

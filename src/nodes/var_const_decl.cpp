@@ -87,27 +87,3 @@ void NodeVarConstDeclaration::setId() {
 std::optional<nodes::Node*> NodeVarConstDeclaration::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-std::string NodeVarConstDeclaration::getVarConstName() const {
-    return this->name;
-}
-
-bool NodeVarConstDeclaration::isConstant() const {
-    return this->is_constant;
-}
-
-std::optional<std::string> NodeVarConstDeclaration::getVarConstType() const {
-    return this->value_type;
-}
-
-std::optional<Node*> NodeVarConstDeclaration::getInitExpression() const {
-    return this->expression;
-}
-
-uint64_t NodeVarConstDeclaration::getDeclarationId() const {
-    return this->id;
-}
-
-void NodeVarConstDeclaration::setDeclarationId(uint64_t id) {
-    this->id = id;
-}

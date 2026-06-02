@@ -49,15 +49,3 @@ void NodeTernaryOperation::setId() {
 std::optional<nodes::Node*> NodeTernaryOperation::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-Node *NodeTernaryOperation::getCondition() const {
-    return this->condition;
-}
-
-Node *NodeTernaryOperation::getTrueExpr() const {
-    return this->true_expr;
-}
-
-Node *NodeTernaryOperation::getFalseExpr() const {
-    return this->false_expr;
-}

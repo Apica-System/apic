@@ -17,6 +17,8 @@ namespace nodes {
 
         const std::vector<Node*> &getNodes() const;
         std::vector<Node*> &getMutableNodes();
+
+        void emitRoot(core::Emitter &emitter) const;
     private:
         std::vector<Node*> nodes;
     };

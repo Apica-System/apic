@@ -42,7 +42,3 @@ void NodeTypeof::setId() {
 std::optional<nodes::Node*> NodeTypeof::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-std::string NodeTypeof::getDeclaredType() const {
-    return this->value_type;
-}

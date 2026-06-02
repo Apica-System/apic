@@ -21,7 +21,3 @@ void NodeDataU32::emit(core::Emitter &emitter) const {
     emitter.writeU64(this->spec_bytecode);
     emitter.writeU32(this->value);
 }
-
-uint32_t NodeDataU32::getSpecificationValue() const {
-    return this->value;
-}

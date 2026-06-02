@@ -93,15 +93,3 @@ void NodeBinaryOperation::setId() {
 std::optional<nodes::Node*> NodeBinaryOperation::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-utils::TokenKind NodeBinaryOperation::getBinaryOperator() const {
-    return this->binary_operator;
-}
-
-Node *NodeBinaryOperation::getLeftOperand() const {
-    return this->left;
-}
-
-std::optional<Node*> NodeBinaryOperation::getRightOperand() const {
-    return this->right;
-}

@@ -15,10 +15,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        Node *getIfCondition() const;
-        Node *getIfBody() const;
-        std::optional<Node*> getElseBody() const;
     private:
         Node *if_condition, *if_body;
         std::optional<Node*> else_body;

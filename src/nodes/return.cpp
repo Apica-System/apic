@@ -51,7 +51,3 @@ void NodeReturn::setId() {
 std::optional<nodes::Node*> NodeReturn::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-std::optional<Node*> NodeReturn::getReturnedExpression() const {
-    return this->returned_expression;
-}

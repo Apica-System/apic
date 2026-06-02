@@ -15,9 +15,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        Node *getParameterExpression() const;
-        std::optional<std::string> getParameterName() const;
     private:
         Node *expression;
         std::optional<std::string> parameter_name;

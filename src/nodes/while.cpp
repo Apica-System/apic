@@ -44,11 +44,3 @@ void NodeWhile::setId() {
 std::optional<nodes::Node*> NodeWhile::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-Node *NodeWhile::getCondition() const {
-    return this->condition;
-}
-
-Node *NodeWhile::getBody() const {
-    return this->body;
-}

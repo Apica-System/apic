@@ -49,11 +49,3 @@ std::optional<nodes::Node*> NodeParameter::optimize(core::Optimizer &optimizer) 
 
     return std::nullopt;
 }
-
-Node *NodeParameter::getParameterExpression() const {
-    return this->expression;
-}
-
-std::optional<std::string> NodeParameter::getParameterName() const {
-    return this->parameter_name;
-}

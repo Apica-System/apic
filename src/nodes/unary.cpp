@@ -55,11 +55,3 @@ void NodeUnaryOperation::setId() {
 std::optional<nodes::Node*> NodeUnaryOperation::optimize(core::Optimizer &) {
     return std::nullopt;
 }
-
-utils::TokenKind NodeUnaryOperation::getUnaryOperator() const {
-    return this->unary_operator;
-}
-
-Node *NodeUnaryOperation::getOperand() const {
-    return this->operand;
-}

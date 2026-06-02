@@ -64,7 +64,3 @@ std::optional<nodes::Node*> NodeGlobalScope::optimize(core::Optimizer &optimizer
 
     return std::nullopt;
 }
-
-Node *NodeGlobalScope::getContainedNode() const {
-    return this->contained;
-}

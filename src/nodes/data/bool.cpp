@@ -21,7 +21,3 @@ void NodeDataBool::emit(core::Emitter &emitter) const {
     emitter.writeU64(this->spec_bytecode);
     emitter.writeU8(this->value);
 }
-
-bool NodeDataBool::getSpecificationValue() const {
-    return this->value;
-}

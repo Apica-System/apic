@@ -13,9 +13,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        std::string getPackageName() const;
-        Node *getContainedNode() const;
     private:
         std::string package_name;
         Node *contained;

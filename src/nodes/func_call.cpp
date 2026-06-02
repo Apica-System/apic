@@ -48,6 +48,7 @@ void NodeFuncCall::emit(core::Emitter &emitter) const {
             emitter.writeU64(common::bytecodes::ApicaBytecode::BuiltinFuncCall);
             emitter.writeU64(builtin_func->second.getBytecode());
 
+            emitter.writeU64(this->parameters.size());
             emitter.removeModifier(core::EmitterModifier::EM_Builtin);
             for (nodes::NodeParameter *param : this->parameters) {
                 param->emit(emitter);
@@ -72,12 +73,4 @@ void NodeFuncCall::setId() {
 
 std::optional<nodes::Node*> NodeFuncCall::optimize(core::Optimizer &) {
     return std::nullopt;
-}
-
-std::string NodeFuncCall::getFunctionName() const {
-    return this->function_name;
-}
-
-const std::vector<NodeParameter*> NodeFuncCall::getFunctionParameters() const {
-    return this->parameters;
 }

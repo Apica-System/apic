@@ -13,10 +13,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        Node *getCondition() const;
-        Node *getTrueExpr() const;
-        Node *getFalseExpr() const;
     private:
         Node *condition, *true_expr, *false_expr;
     };

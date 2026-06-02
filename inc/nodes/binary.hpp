@@ -16,10 +16,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        utils::TokenKind getBinaryOperator() const;
-        Node *getLeftOperand() const;
-        std::optional<Node*> getRightOperand() const;
     private:
         utils::TokenKind binary_operator;
         Node *left;

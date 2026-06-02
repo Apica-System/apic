@@ -6,7 +6,7 @@
 using namespace core;
 
 Emitter::Emitter(const std::string &output_path)
-    : output_path(output_path), write_error_happened(false) {
+    : output_path(output_path), modifier(EmitterModifier::EM_None), write_error_happened(false) {
     this->output_file = fopen(output_path.c_str(), "wb");
     if (!this->output_file) {
         std::string error_message(utils::EMT_ERROR_OPEN_OUTPUT_FILE);

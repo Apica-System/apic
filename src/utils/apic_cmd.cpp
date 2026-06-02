@@ -118,7 +118,7 @@ entry quit {}
         {
             std::optional<std::string> output_path = apic_options.getOption(core::ApicOptionKind::OutputFile);
             core::Emitter emitter(output_path.value_or("out.apb"));
-            root->emit(emitter);
+            root->emitRoot(emitter);
             emitter.processResult();
         }
         

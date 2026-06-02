@@ -10,8 +10,6 @@ namespace nodes {
         void show(std::string &indent, char end) const override;
         NodeKind getKind() const override;
         void emit(core::Emitter &emitter) const override;
-
-        uint32_t getSpecificationValue() const;
     private:
         uint32_t value;
     };

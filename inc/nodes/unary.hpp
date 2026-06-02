@@ -14,9 +14,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        utils::TokenKind getUnaryOperator() const;
-        Node *getOperand() const;
     private:
         utils::TokenKind unary_operator;
         Node *operand;

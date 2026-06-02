@@ -14,9 +14,6 @@ namespace nodes {
         void emit(core::Emitter &emitter) const override;
         void setId() override;
         std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
-
-        std::string getFunctionName() const;
-        const std::vector<NodeParameter*> getFunctionParameters() const;
     private:
         std::string function_name;
         std::vector<NodeParameter*> parameters;
