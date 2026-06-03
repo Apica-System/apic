@@ -25,7 +25,7 @@ NodeLiteral::~NodeLiteral() {
 }
 
 NodeLiteral *NodeLiteral::copyBuiltin(const NodeLiteral &builtin) {
-    NodeLiteral *literal = new NodeLiteral(builtin);
+    NodeLiteral *literal = new NodeLiteral(builtin.getPosition(), builtin.getValue());
     literal->is_copy = true;
     return literal;
 }

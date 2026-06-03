@@ -19,7 +19,7 @@ namespace nodes {
         virtual NodeKind getKind() const = 0;
         virtual void emit(core::Emitter &emitter) const = 0;
         virtual void setId() = 0;
-        virtual std::optional<nodes::Node*> optimize(core::Optimizer &optimize) = 0;
+        virtual std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) = 0;
 
         utils::Position getPosition() const;
     protected:

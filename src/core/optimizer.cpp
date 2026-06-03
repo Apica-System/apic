@@ -30,7 +30,7 @@ void Optimizer::deleteNode(nodes::Node *node, nodes::Node *optimized) {
     }
 }
 
-void Optimizer::swapNode(nodes::Node *node, nodes::Node *optimized) {
+void Optimizer::swapNode(nodes::Node *&node, nodes::Node *optimized) {
     if (node != optimized) {
         delete node;
         node = optimized;

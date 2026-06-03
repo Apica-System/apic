@@ -43,9 +43,9 @@ void NodeGlobalScope::emit(core::Emitter &emitter) const {
 }
 
 void NodeGlobalScope::setId() {
-    utils::IdGenerator::getInstance().setGlobal(true);
+    utils::IdGenerator::getInstance().addModifier(utils::IdGeneratorModifier::IGM_Global);
     this->contained->setId();
-    utils::IdGenerator::getInstance().setGlobal(false);
+    utils::IdGenerator::getInstance().removeModifier(utils::IdGeneratorModifier::IGM_Global);
 }
 
 std::optional<nodes::Node*> NodeGlobalScope::optimize(core::Optimizer &optimizer) {

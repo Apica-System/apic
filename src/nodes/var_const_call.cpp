@@ -32,7 +32,6 @@ void NodeVarConstCall::emit(core::Emitter &emitter) const {
                 this->position
             ));
         } else {
-            std::string indent;
             builtin->second.emit(emitter);
         }
     } else {
@@ -42,6 +41,9 @@ void NodeVarConstCall::emit(core::Emitter &emitter) const {
 }
 
 void NodeVarConstCall::setId() {
+    if (utils::IdGenerator::getInstance().getModifier() & utils::IdGeneratorModifier::IGM_BUILTIN)
+        return;
+
     std::optional<uint64_t> associated_id = utils::IdGenerator::getInstance().getId(this->name);
     if (!associated_id) {
         utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(

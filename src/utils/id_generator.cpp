@@ -5,7 +5,7 @@
 using namespace utils;
 
 IdGenerator::IdGenerator()
-    : max_id(0), is_global(false) {
+    : max_id(0), modifier(IdGeneratorModifier::IGM_None) {
 
 }
 
@@ -15,7 +15,7 @@ IdGenerator &IdGenerator::getInstance() {
 }
 
 uint64_t IdGenerator::getIdCount() const {
-    return this->max_id + 1;
+    return this->max_id;
 }
 
 void IdGenerator::pushContext() {
@@ -32,7 +32,10 @@ void IdGenerator::popContext() {
 }
 
 void IdGenerator::setNewId(const std::string &name, const Position &pos) {
-    std::unordered_map<std::string, uint64_t> &current_context = is_global ? this->ids.front() : this->ids.back();
+    std::unordered_map<std::string, uint64_t> &current_context = (this->modifier & IdGeneratorModifier::IGM_Global) 
+        ? this->ids.front() 
+        : this->ids.back();
+
     auto already_exists = current_context.find(name);
     if (already_exists != current_context.end()) {
         DiagnosticBag::getInstance().addDiagnostic(Diagnostic(
@@ -47,7 +50,7 @@ void IdGenerator::setNewId(const std::string &name, const Position &pos) {
 }
 
 std::optional<uint64_t> IdGenerator::getId(const std::string &name) const {
-    int64_t scope = is_global ? 0 : this->ids.size() - 1;
+    int64_t scope = (this->modifier & IdGeneratorModifier::IGM_Global) ? 0 : this->ids.size() - 1;
     while (scope >= 0) {
         auto associated_id = this->ids[scope].find(name);
         if (associated_id != this->ids[scope--].end())
@@ -57,6 +60,14 @@ std::optional<uint64_t> IdGenerator::getId(const std::string &name) const {
     return std::nullopt;
 }
 
-void IdGenerator::setGlobal(bool indicator) {
-    this->is_global = indicator;
+uint8_t IdGenerator::getModifier() const {
+    return this->modifier;
+}
+
+void IdGenerator::addModifier(IdGeneratorModifier modifier) {
+    this->modifier |= modifier;
+}
+
+void IdGenerator::removeModifier(IdGeneratorModifier modifier) {
+    this->modifier &= ~modifier;
 }

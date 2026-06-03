@@ -3,6 +3,8 @@
 #include "utils/diagnostic_bag.hpp"
 #include "utils/errors.hpp"
 #include "utils/builtins.hpp"
+#include "utils/id_generator.hpp"
+#include "core/optimizer.hpp"
 #include <iostream>
 
 using namespace nodes;
@@ -67,10 +69,15 @@ void NodeFuncCall::emit(core::Emitter &emitter) const {
 }
 
 void NodeFuncCall::setId() {
+    utils::IdGenerator::getInstance().removeModifier(utils::IdGeneratorModifier::IGM_BUILTIN);
     for (nodes::Node *parameter : this->parameters)
         parameter->setId();
 }
 
-std::optional<nodes::Node*> NodeFuncCall::optimize(core::Optimizer &) {
+std::optional<nodes::Node*> NodeFuncCall::optimize(core::Optimizer &optimizer) {
+    for (nodes::Node *node : this->parameters) {
+        node->optimize(optimizer);
+    }
+
     return std::nullopt;
 }

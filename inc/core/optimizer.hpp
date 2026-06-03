@@ -22,7 +22,7 @@ namespace core {
         void removeModifier(OptimizerModifier modifier);
 
         void deleteNode(nodes::Node *node, nodes::Node *optimized);
-        void swapNode(nodes::Node *node, nodes::Node *optimized);
+        void swapNode(nodes::Node *&node, nodes::Node *optimized);
     private:
         uint8_t modifier;
     };

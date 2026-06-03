@@ -4,6 +4,7 @@
 #include "utils/diagnostic_bag.hpp"
 #include "utils/errors.hpp"
 #include "utils/builtins.hpp"
+#include "utils/id_generator.hpp"
 #include <iostream>
 
 using namespace nodes;
@@ -46,10 +47,13 @@ void NodePackageCall::emit(core::Emitter &emitter) const {
 }
 
 void NodePackageCall::setId() {
-    if (this->package_name == "APICA")
-        return;
-
-    this->contained->setId();
+    if (this->package_name == "APICA") {
+        utils::IdGenerator::getInstance().addModifier(utils::IdGeneratorModifier::IGM_BUILTIN);
+        this->contained->setId();
+        utils::IdGenerator::getInstance().removeModifier(utils::IdGeneratorModifier::IGM_BUILTIN);
+    } else {
+        this->contained->setId();
+    }
 }
 
 std::optional<nodes::Node*> NodePackageCall::optimize(core::Optimizer &optimizer) {
