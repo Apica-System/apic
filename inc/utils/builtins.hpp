@@ -84,32 +84,32 @@ options: [i(nit) | b(uild)]
         m.emplace(
             std::piecewise_construct,
             std::forward_as_tuple("KEY_Q"),
-            std::forward_as_tuple(new common::values::ValueU32(16))
-        );
-        m.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple("KEY_W"),
-            std::forward_as_tuple(new common::values::ValueU32(17))
-        );
-        m.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple("KEY_E"),
-            std::forward_as_tuple(new common::values::ValueU32(18))
-        );
-        m.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple("KEY_R"),
-            std::forward_as_tuple(new common::values::ValueU32(19))
-        );
-        m.emplace(
-            std::piecewise_construct,
-            std::forward_as_tuple("KEY_T"),
             std::forward_as_tuple(new common::values::ValueU32(20))
         );
         m.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple("KEY_Y"),
+            std::forward_as_tuple("KEY_W"),
+            std::forward_as_tuple(new common::values::ValueU32(26))
+        );
+        m.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple("KEY_E"),
+            std::forward_as_tuple(new common::values::ValueU32(8))
+        );
+        m.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple("KEY_R"),
             std::forward_as_tuple(new common::values::ValueU32(21))
+        );
+        m.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple("KEY_T"),
+            std::forward_as_tuple(new common::values::ValueU32(23))
+        );
+        m.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple("KEY_Y"),
+            std::forward_as_tuple(new common::values::ValueU32(28))
         );
 
         return m;
@@ -223,6 +223,13 @@ options: [i(nit) | b(uild)]
 
         {"IsKeyPressed", BuiltinFunctionInfo(
             common::bytecodes::ApicaBuiltinFunctionBytecode::IsKeyPressed,
+            {
+                ParameterInfo(false)
+            }
+        )},
+
+        {"IsKeyJustReleased", BuiltinFunctionInfo(
+            common::bytecodes::ApicaBuiltinFunctionBytecode::IsKeyJustReleased,
             {
                 ParameterInfo(false)
             }

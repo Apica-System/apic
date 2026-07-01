@@ -13,6 +13,13 @@ Diagnostic::Diagnostic(DiagnosticKind kind, const std::string &message, const Po
 
 }
 
+Diagnostic::Diagnostic(common::values::ValueError *error, const Position &position)
+    : kind(DiagnosticKind::Error), position(position) {
+    this->message = error->getName().value_or("");
+    if (error->getDetails())
+        this->message += ": " + error->getDetails().value();
+}
+
 void Diagnostic::show(const SourceText &source) const {
     std::string color = Diagnostic::getColorByKind(this->kind);
     if (this->position)
@@ -26,7 +33,7 @@ DiagnosticKind Diagnostic::getKind() const {
 }
 
 void Diagnostic::showWithoutPosition(const std::string &color) const {
-    std::cout << color << this->message << "\x1b[0m\n";
+    std::cout << color << this->message << ".\x1b[0m\n";
 }
 
 void Diagnostic::showWithPosition(const std::string &color, const SourceText &source) const {
@@ -39,7 +46,7 @@ void Diagnostic::showWithPosition(const std::string &color, const SourceText &so
         
         std::cout << line_text.value() << '\n' 
             << color << std::string(infos.left_offset, ' ') << std::string(this->position.value().getUtf8Length(), '^') << '\n'
-            << "[At line " << infos.line_start + 1 << ", column " << infos.left_offset + 1 << '-' << infos.left_offset + this->position.value().getUtf8Length() << "]: " << this->message << "\x1b[0m\n";
+            << "[At line " << infos.line_start + 1 << ", column " << infos.left_offset + 1 << '-' << infos.left_offset + this->position.value().getUtf8Length() << "]: " << this->message << ".\x1b[0m\n";
     } else {
         for (uint64_t i = infos.line_start; i <= infos.line_end; i++) {
             std::optional<std::string> line_text = source.getLineText(i);

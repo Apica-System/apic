@@ -4,6 +4,7 @@
 #include <string>
 #include <optional>
 #include "utils/source.hpp"
+#include "values/error.hpp"
 
 namespace utils {
     enum DiagnosticKind : uint8_t {
@@ -17,6 +18,7 @@ namespace utils {
     public:
         Diagnostic(DiagnosticKind kind, const std::string &message);
         Diagnostic(DiagnosticKind kind, const std::string &message, const Position &position);
+        Diagnostic(common::values::ValueError *error, const Position &position);
 
         void show(const SourceText &source) const;
 

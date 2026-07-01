@@ -80,7 +80,7 @@ void NodeVarConstDeclaration::emit(core::Emitter &emitter) const {
 }
 
 void NodeVarConstDeclaration::setId() {
-    utils::IdGenerator::getInstance().setNewId(this->name, this->position);
+    this->id = utils::IdGenerator::getInstance().setNewId(this->name, this->position);
     if (this->expression) this->expression.value()->setId();
 }
 

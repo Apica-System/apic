@@ -22,7 +22,7 @@ namespace utils {
 
         void pushContext();
         void popContext();
-        void setNewId(const std::string &name, const Position &pos);
+        uint64_t setNewId(const std::string &name, const Position &pos);
         std::optional<uint64_t> getId(const std::string &name) const;
 
         uint8_t getModifier() const;

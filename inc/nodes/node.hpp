@@ -11,6 +11,11 @@ namespace core {
 }
 
 namespace nodes {
+    enum NodeModifier : uint8_t {
+        NM_None =   0b00000000,
+        NM_Used =   0b00000001,
+    };
+
     class Node {
     public:
         virtual ~Node() {}

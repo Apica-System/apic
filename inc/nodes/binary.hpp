@@ -20,5 +20,7 @@ namespace nodes {
         utils::TokenKind binary_operator;
         Node *left;
         std::optional<Node*> right;
+
+        std::optional<nodes::Node*> optimizeFullBinary();
     };
 }

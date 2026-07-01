@@ -31,7 +31,7 @@ void IdGenerator::popContext() {
         this->ids.pop_back();
 }
 
-void IdGenerator::setNewId(const std::string &name, const Position &pos) {
+uint64_t IdGenerator::setNewId(const std::string &name, const Position &pos) {
     std::unordered_map<std::string, uint64_t> &current_context = (this->modifier & IdGeneratorModifier::IGM_Global) 
         ? this->ids.front() 
         : this->ids.back();
@@ -47,6 +47,8 @@ void IdGenerator::setNewId(const std::string &name, const Position &pos) {
 
     uint64_t new_id = this->max_id++;
     current_context[name] = new_id;
+
+    return new_id;
 }
 
 std::optional<uint64_t> IdGenerator::getId(const std::string &name) const {

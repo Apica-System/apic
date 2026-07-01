@@ -369,7 +369,7 @@ utils::Token Lexer::lexNumber() {
         else if (next == 'o') number_kind = LexerNumberKind::Octal;
         else if (next == 'x') number_kind = LexerNumberKind::Hexadecimal;
 
-        if (next != LexerNumberKind::Integer)
+        if (number_kind != LexerNumberKind::Integer)
             this->advance();
     }
 

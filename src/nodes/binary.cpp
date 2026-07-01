@@ -3,6 +3,9 @@
 #include "utils/diagnostic_bag.hpp"
 #include "utils/errors.hpp"
 #include <iostream>
+#include "core/optimizer.hpp"
+#include "elements.hpp"
+#include "values/error.hpp"
 
 using namespace nodes;
 
@@ -67,6 +70,18 @@ void NodeBinaryOperation::emit(core::Emitter &emitter) const {
             emitter.writeU64(common::bytecodes::ApicaBytecode::LessThan);
             break;
         
+        case utils::TokenKind::LessEquals:
+            emitter.writeU64(common::bytecodes::ApicaBytecode::LessOrEquals);
+            break;
+        
+        case utils::TokenKind::Greater:
+            emitter.writeU64(common::bytecodes::ApicaBytecode::GreaterThan);
+            break;
+        
+        case utils::TokenKind::GreaterEquals:
+            emitter.writeU64(common::bytecodes::ApicaBytecode::GreaterOrEquals);
+            break;
+        
         case utils::TokenKind::As:
             emitter.writeU64(common::bytecodes::ApicaBytecode::As);
             break;
@@ -90,6 +105,70 @@ void NodeBinaryOperation::setId() {
     if (this->right) this->right.value()->setId();
 }
 
-std::optional<nodes::Node*> NodeBinaryOperation::optimize(core::Optimizer &) {
+std::optional<nodes::Node*> NodeBinaryOperation::optimize(core::Optimizer &optimizer) {
+    std::optional<nodes::Node*> optimized_left = this->left->optimize(optimizer);
+    if (optimized_left)
+        optimizer.swapNode(this->left, optimized_left.value());
+    
+    if (this->right) {
+        std::optional<nodes::Node*> optimized_right = this->right.value()->optimize(optimizer);
+        if (optimized_right)
+            optimizer.swapNode(this->right.value(), optimized_right.value());
+    }
+
+    switch (this->binary_operator) {
+        case utils::TokenKind::Plus: case utils::TokenKind::Minus:
+            return this->optimizeFullBinary();
+
+        default: return std::nullopt;
+    }
+}
+
+std::optional<nodes::Node*> NodeBinaryOperation::optimizeFullBinary() {
+    if (this->left->getKind() == NodeKind::Literal && this->right.value()->getKind() == NodeKind::Literal) {
+        NodeLiteral *literal_left = static_cast<NodeLiteral*>(this->left);
+        NodeLiteral *literal_right = static_cast<NodeLiteral*>(this->right.value());
+
+        common::elements::Element element_left(
+            common::elements::ElementModifier::Copy,
+            literal_left->getValue()
+        );
+
+        common::elements::Element element_right(
+            common::elements::ElementModifier::Copy,
+            literal_right->getValue()
+        );
+
+        common::elements::Element *result = nullptr;
+        switch (this->binary_operator) {
+            case utils::TokenKind::Plus:
+                result = element_left.add(&element_right);
+                break;
+            
+            case utils::TokenKind::Minus:
+                result = element_left.subtract(&element_right);
+                break;
+            
+            default: break;
+        }
+
+        if (!result) return std::nullopt;
+
+        if (result->isErrorOrController()) {
+            utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+                static_cast<common::values::ValueError*>(result->getValue()),
+                this->position
+            ));
+
+            delete result;
+        } else {
+            result->addModifier(common::elements::ElementModifier::Copy);
+            NodeLiteral *returned = new NodeLiteral(result->getValue());
+            delete result;
+            
+            return returned;
+        }
+    }
+
     return std::nullopt;
 }

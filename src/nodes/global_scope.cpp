@@ -32,14 +32,9 @@ NodeKind NodeGlobalScope::getKind() const {
 }
 
 void NodeGlobalScope::emit(core::Emitter &emitter) const {
-    emitter.writeU64(common::bytecodes::ApicaBytecode::Global);
-    
     emitter.addModifier(core::EmitterModifier::EM_UnpackCompound);
     this->contained->emit(emitter);
     emitter.removeModifier(core::EmitterModifier::EM_UnpackCompound);
-    
-    if (this->contained->getKind() != NodeKind::Compound)
-        emitter.writeU64(common::bytecodes::ApicaBytecode::EndOfBlock);
 }
 
 void NodeGlobalScope::setId() {
