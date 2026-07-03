@@ -69,22 +69,25 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install build tools (Linux/macOS)
-        if: matrix.os != 'windows-latest'
+      # CORRECTION 1 : On utilise la condition GitHub native (runner.os)
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
         run: |
-          if [ "$RUNNER_OS" = "Linux" ]; then
-            sudo apt-get update && sudo apt-get install -y make g++
-          fi
+          sudo apt-get update && sudo apt-get install -y make g++
 
+      # Sous Windows-2022, MSYS2 et make sont déjà pré-installés. 
+      # Si votre makefile nécessite l'environnement MSYS2, on force le shell bash.
       - name: Build project
+        shell: bash
         run: make build EXT="${{ matrix.ext }}"
 
+      # CORRECTION 2 : On utilise le shell bash explicitement pour tout le monde,
+      # et on teste runner.os (Windows / Linux / macOS) au lieu du nom de l'image.
       - name: Prepare artifact
         shell: bash
         run: |
           mkdir -p dist
-
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
             cp apic.exe dist/apic-${{ matrix.name }}.exe
           else
             cp apic dist/apic-${{ matrix.name }}
@@ -92,7 +95,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}
+          name: ${{ matrix.name }} # Plus propre d'utiliser le nom de l'architecture ici
           path: dist/*
 
   release:
@@ -111,7 +114,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="v${{ needs.check-version.outputs.version }}"
-
           FILES=$(find artifacts -type f)
 
           echo "Creating release $VERSION"
