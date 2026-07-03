@@ -52,13 +52,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             ext: ""
             name: "linux-x64"
-          - os: windows-latest
+          - os: windows-2022
             ext: ".exe"
             name: "windows-x64"
-          - os: macos-latest
+          - os: macos-15
             ext: ""
             name: "macos-x64"
 
