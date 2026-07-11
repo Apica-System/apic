@@ -4,7 +4,7 @@ CXX :=		g++
 CXXFLAGS :=	-Wall -Wextra -Wpedantic -Wold-style-cast -std=c++20 -O2
 DBGFLAGS :=	-Wall -Wextra -Wpedantic -Wold-style-cast -std=c++20 -g
 
-INCLUDES :=	-Iinc -Icommon/inc
+INCLUDES :=	-Iinc -Icommon/inc -Ilibs/inc
 OBJDIR :=	temp
 EXT ?=		.exe
 ARGS ?=		# console arguments
@@ -15,6 +15,7 @@ SOURCES := \
 	$(wildcard src/core/*.cpp) \
 	$(wildcard src/nodes/*.cpp) \
 	$(wildcard src/nodes/data/*.cpp) \
+	$(wildcard src/lsp/*.cpp) \
 	$(wildcard common/src/*.cpp) \
 	$(wildcard common/src/values/*.cpp)
 

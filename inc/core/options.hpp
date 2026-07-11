@@ -9,7 +9,7 @@ namespace core {
     enum ApicOptionKind : uint8_t {
         Bad,
 
-        Init, Build, Help, Version,
+        Init, Build, Help, Version, Lsp,
 
         SourceFile, OutputFile,
 

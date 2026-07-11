@@ -2,6 +2,7 @@
 #include "utils/builtins.hpp"
 #include "core/options.hpp"
 #include "utils/apic_cmd.hpp"
+#include "lsp/server.hpp"
 #include <string>
 
 using namespace utils;
@@ -42,6 +43,13 @@ int main(int argc, char **argv) {
     option = options.getOption(ApicOptionKind::Build);
     if (option) {
         return build_bytecode_file(options) ? EXIT_SUCCESS : EXIT_FAILURE;
+    }
+
+    // LSP
+    option = options.getOption(ApicOptionKind::Lsp);
+    if (option) {
+        lsp::lsp_entrypoints();
+        return EXIT_SUCCESS;
     }
 
     return EXIT_FAILURE;

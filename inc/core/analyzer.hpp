@@ -7,7 +7,7 @@ namespace core {
     public:
         Analyzer();
 
-        void analyze(nodes::NodeCompound *root);
+        void analyze(nodes::NodeCompound *root, bool cmp);
     private:
         bool checkEntrypoints(nodes::NodeCompound *root);
         bool checkSpecifications(nodes::NodeCompound *root);

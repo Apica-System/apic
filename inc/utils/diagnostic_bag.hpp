@@ -9,6 +9,8 @@ namespace utils {
 
         void addDiagnostic(const Diagnostic &diagnostic);
         void showAll(const SourceText &source) const;
+        void clear();
+        void lspFlush(const SourceText &source, const std::string &uri);
 
         bool hasAny() const;
         bool hasAnyError() const;

@@ -6,6 +6,8 @@
 #include "utils/source.hpp"
 #include "values/error.hpp"
 
+#include "nlohmann/json.hpp"
+
 namespace utils {
     enum DiagnosticKind : uint8_t {
         Success,
@@ -21,6 +23,7 @@ namespace utils {
         Diagnostic(common::values::ValueError *error, const Position &position);
 
         void show(const SourceText &source) const;
+        void lspFlush(const SourceText &source, nlohmann::json &diagnostic_list);
 
         DiagnosticKind getKind() const;
     private:

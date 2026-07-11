@@ -19,6 +19,7 @@ commands:
     build       build a bytecode file (.apb) from a main apica source file (.apc)
     help        display this information
     version     display the version number of apic
+    lsp         start the Language Server
 
 options: [i(nit) | b(uild)]
     [b]     -i <path>   provide a path to the main apica source file

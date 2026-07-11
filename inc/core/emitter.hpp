@@ -13,6 +13,7 @@ namespace core {
 
     class Emitter final {
     public:
+        Emitter();
         Emitter(const std::string &output_path);
         ~Emitter();
 
@@ -31,6 +32,6 @@ namespace core {
         std::string output_path;
         FILE *output_file;
         uint8_t modifier;
-        bool write_error_happened;
+        bool write_error_happened, is_mock;
     };
 }

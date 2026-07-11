@@ -28,6 +28,31 @@ void Diagnostic::show(const SourceText &source) const {
         this->showWithoutPosition(color);
 }
 
+void Diagnostic::lspFlush(const SourceText &source, nlohmann::json &diagnostic_list) {
+    if (this->position) {
+        utils::Position &pos = this->position.value();
+        utils::SourceInformations infos;
+        source.getInfosForPosition(pos, infos);
+        
+        int severity;
+        switch (this->kind) {
+            case DiagnosticKind::Error: severity = 1; break;
+            case DiagnosticKind::Warning: severity = 2; break;
+            default: severity = 3; break;
+        }
+
+        diagnostic_list.push_back({
+            { "range", {
+                { "start", {{"line", infos.line_start}, {"character", infos.left_offset}} },
+                { "end", {{"line", infos.line_end}, {"character", infos.left_offset + pos.getUtf8Length()}} }
+            } },
+            { "severity",  severity},
+            { "message", this->message },
+            { "source", "Apica compiler" }
+        });
+    }
+}
+
 DiagnosticKind Diagnostic::getKind() const {
     return this->kind;
 }

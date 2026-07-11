@@ -104,7 +104,7 @@ entry quit {}
 
         if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
             core::Analyzer analyzer;
-            analyzer.analyze(root);
+            analyzer.analyze(root, true);
         }
 
         if (!utils::DiagnosticBag::getInstance().hasAnyError()) {

@@ -100,6 +100,7 @@ bool ApicOptions::handleCommand(char *arg) {
     else if (!strcmp(arg, "init")) this->addCommandOrError(ApicOptionKind::Init, "");
     else if (!strcmp(arg, "build")) this->addCommandOrError(ApicOptionKind::Build, "");
     else if (!strcmp(arg, "version")) this->addCommandOrError(ApicOptionKind::Version, "");
+    else if (!strcmp(arg, "lsp")) this->addCommandOrError(ApicOptionKind::Lsp, "");
     else return false;
 
     return true;
