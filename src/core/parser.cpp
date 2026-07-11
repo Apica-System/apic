@@ -446,6 +446,16 @@ nodes::Node *Parser::parseVarConstDecl(bool is_const) {
     }
 
     std::string var_const_name = this->source.getTextFromPosition(identifier_token.getPosition()).value();
+    if (!value_type && !expression) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::PAR_ERROR_VAR_CONST_WITHOUT_ANYTHING),
+            identifier_token.getPosition()
+        ));
+
+        return new nodes::NodeBad(identifier_token.getPosition());
+    }
+    
     if (!value_type) {
         return new nodes::NodeVarConstDeclaration(
             identifier_token.getPosition(),

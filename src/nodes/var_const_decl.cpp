@@ -62,7 +62,8 @@ void NodeVarConstDeclaration::emit(core::Emitter &emitter) const {
 
             utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
                 utils::DiagnosticKind::Error,
-                error_message
+                error_message,
+                this->position
             ));
         } else {
             emitter.writeU64(var_const_type->second);

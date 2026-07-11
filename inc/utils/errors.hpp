@@ -83,6 +83,7 @@ namespace utils {
     inline constexpr std::string_view PAR_ERROR_WHILE_WITHOUT_LPARENTH = "ParserError: Expected a `(` to begin a while condition";
     inline constexpr std::string_view PAR_ERROR_UNTERMINATED_WHILE_CND = "ParserError: Expected a `)` to end a while condition";
     inline constexpr std::string_view PAR_ERROR_NOT_SEPARATED_STATS = "ParserError: Statements must be separated by a new-line or a `;`";
+    inline constexpr std::string_view PAR_ERROR_VAR_CONST_WITHOUT_ANYTHING = "ParserError: Cannot declare a variable or a constant without type and expression";
 
 
     // Analyzer errors
