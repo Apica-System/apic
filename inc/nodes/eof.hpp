@@ -11,6 +11,6 @@ namespace nodes {
         NodeKind getKind() const override;
         void emit(core::Emitter &emitter) const override;
         void setId() override;
-        std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
+        utils::OptimizedResult optimize(core::Optimizer &optimizer) override;
     };
 }

@@ -56,10 +56,9 @@ void NodePackageCall::setId() {
     }
 }
 
-std::optional<nodes::Node*> NodePackageCall::optimize(core::Optimizer &optimizer) {
-    optimizer.addModifier(core::OptimizerModifier::OM_Builtin);
-    std::optional<nodes::Node*> optimized = this->contained->optimize(optimizer);
-    optimizer.removeModifier(core::OptimizerModifier::OM_Builtin);
+utils::OptimizedResult NodePackageCall::optimize(core::Optimizer &optimizer) {
+    optimizer.addModifier(core::OptimizerModifier::Builtin);
+    utils::OptimizedResult optimized = this->contained->optimize(optimizer);
 
     return optimized;
 }

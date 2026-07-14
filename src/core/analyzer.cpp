@@ -13,12 +13,11 @@ Analyzer::Analyzer() {
 }
 
 void Analyzer::analyze(nodes::NodeCompound *root, bool cmp) {
-    bool checked = this->checkEntrypoints(root) & this->checkSpecifications(root);
-    if (!checked)
+    if (cmp && !this->checkEntrypoints(root))
         return;
     
     this->setIds(root);
-    if (cmp) this->extractSpecifications(root);
+    this->extractSpecifications(root);
     this->extractGlobals(root);
 }
 

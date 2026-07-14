@@ -4,6 +4,7 @@
 #include "core/parser.hpp"
 #include "core/analyzer.hpp"
 #include "core/emitter.hpp"
+#include "core/optimizer.hpp"
 
 #include "jsonrpcxx/server.hpp"
 
@@ -23,6 +24,9 @@ void lsp_analyze_code(const std::string &text, const std::string &uri) {
 
     core::Parser parser(source);
     nodes::NodeCompound *root = parser.parse();
+
+    core::Optimizer optimizer;
+    root->optimize(optimizer);
 
     core::Analyzer analyzer;
     analyzer.analyze(root, false);

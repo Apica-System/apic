@@ -25,6 +25,6 @@ void NodeContinue::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeContinue::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeContinue::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(utils::OptimizedFlag::AlwaysNull);
 }

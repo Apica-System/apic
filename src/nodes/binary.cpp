@@ -105,26 +105,48 @@ void NodeBinaryOperation::setId() {
     if (this->right) this->right.value()->setId();
 }
 
-std::optional<nodes::Node*> NodeBinaryOperation::optimize(core::Optimizer &optimizer) {
-    std::optional<nodes::Node*> optimized_left = this->left->optimize(optimizer);
-    if (optimized_left)
-        optimizer.swapNode(this->left, optimized_left.value());
+utils::OptimizedResult NodeBinaryOperation::optimize(core::Optimizer &optimizer) {
+    utils::OptimizedResult optimized_left = this->left->optimize(optimizer);
+    if (optimized_left.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::OPM_ERROR_NULL_OPERAND_FOUND),
+            this->left->getPosition()
+        ));
+    } else if (optimized_left.hasFlag(utils::OptimizedFlag::Optimized)) {
+        optimized_left.swapWith(this->left);
+    }
     
     if (this->right) {
-        std::optional<nodes::Node*> optimized_right = this->right.value()->optimize(optimizer);
-        if (optimized_right)
-            optimizer.swapNode(this->right.value(), optimized_right.value());
+        utils::OptimizedResult optimized_right = this->right.value()->optimize(optimizer);
+        if (optimized_left.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+            utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+                utils::DiagnosticKind::Error,
+                std::string(utils::OPM_ERROR_NULL_OPERAND_FOUND),
+                this->right.value()->getPosition()
+            ));
+        } else if (optimized_right.hasFlag(utils::OptimizedFlag::Optimized)) {
+            optimized_right.swapWith(this->right.value());
+        }
     }
 
     switch (this->binary_operator) {
-        case utils::TokenKind::Plus: case utils::TokenKind::Minus:
-            return this->optimizeFullBinary();
+        case utils::TokenKind::PlusPlus: case utils::TokenKind::MinusMinus:
+            this->checkCorrectVarConstAccess(optimized_left);
+            break;
 
-        default: return std::nullopt;
+        case utils::TokenKind::Plus: case utils::TokenKind::Minus:
+        case utils::TokenKind::Less: case utils::TokenKind::LessEquals:
+        case utils::TokenKind::Greater: case utils::TokenKind::GreaterEquals:
+            return this->optimizeOperation();
+
+        default: break;
     }
+
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }
 
-std::optional<nodes::Node*> NodeBinaryOperation::optimizeFullBinary() {
+utils::OptimizedResult NodeBinaryOperation::optimizeOperation() {
     if (this->left->getKind() == NodeKind::Literal && this->right.value()->getKind() == NodeKind::Literal) {
         NodeLiteral *literal_left = static_cast<NodeLiteral*>(this->left);
         NodeLiteral *literal_right = static_cast<NodeLiteral*>(this->right.value());
@@ -149,26 +171,57 @@ std::optional<nodes::Node*> NodeBinaryOperation::optimizeFullBinary() {
                 result = element_left.subtract(&element_right);
                 break;
             
+            case utils::TokenKind::Less:
+                result = element_left.lessThan(&element_right);
+                break;
+            
+            case utils::TokenKind::LessEquals:
+                result = element_left.lessOrEquals(&element_right);
+                break;
+            
+            case utils::TokenKind::Greater:
+                result = element_left.greaterThan(&element_right);
+                break;
+            
+            case utils::TokenKind::GreaterEquals:
+                result = element_left.greaterOrEquals(&element_right);
+                break;
+            
             default: break;
         }
 
-        if (!result) return std::nullopt;
+        if (!result) 
+            return utils::OptimizedResult(utils::OptimizedFlag::None);
 
+        result->addModifier(common::elements::ElementModifier::Copy);
         if (result->isErrorOrController()) {
             utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
                 static_cast<common::values::ValueError*>(result->getValue()),
                 this->position
             ));
 
+            
             delete result;
         } else {
-            result->addModifier(common::elements::ElementModifier::Copy);
-            NodeLiteral *returned = new NodeLiteral(result->getValue());
+            common::values::Value *val = result->getValue();
             delete result;
             
-            return returned;
+            return utils::OptimizedResult(
+                utils::OptimizedFlag::Literal | utils::OptimizedFlag::Optimized,
+                new nodes::NodeLiteral(val)
+            );
         }
     }
 
-    return std::nullopt;
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
+}
+
+void NodeBinaryOperation::checkCorrectVarConstAccess(const utils::OptimizedResult &optimized_left) {
+    if (!optimized_left.hasFlag(utils::OptimizedFlag::VarConstAccess)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::OPM_ERROR_BINARY_OPERATOR_EXPECTED_VAR_CONST),
+            this->position
+        ));
+    }
 }

@@ -1,8 +1,13 @@
 #include "nodes/global_scope.hpp"
+#include "nodes/eof.hpp"
+
 #include "core/emitter.hpp"
 #include "core/optimizer.hpp"
+
 #include "utils/id_generator.hpp"
-#include "nodes/eof.hpp"
+#include "utils/warnings.hpp"
+#include "utils/diagnostic_bag.hpp"
+
 #include <iostream>
 
 using namespace nodes;
@@ -43,19 +48,24 @@ void NodeGlobalScope::setId() {
     utils::IdGenerator::getInstance().removeModifier(utils::IdGeneratorModifier::IGM_Global);
 }
 
-std::optional<nodes::Node*> NodeGlobalScope::optimize(core::Optimizer &optimizer) {
-    std::optional<nodes::Node*> optimized = this->contained->optimize(optimizer);
-    if (optimized) {
-        nodes::Node *opt_node = optimized.value();
-        if (opt_node->getKind() == NodeKind::Literal) {
-            optimizer.swapNode(this->contained, opt_node);
-            return new NodeEndOfFile(utils::Position());
-        } else if (opt_node->getKind() == NodeKind::EndOfFile) {
-            return opt_node;
-        }
+utils::OptimizedResult NodeGlobalScope::optimize(core::Optimizer &optimizer) {
+    utils::OptimizedResult optimized = this->contained->optimize(optimizer);
+    if (optimized.hasFlag(utils::OptimizedFlag::Literal)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Warning,
+            std::string(utils::OPM_WRN_USELESS_GLOBAL),
+            this->position
+        ));
 
-        optimizer.swapNode(this->contained, opt_node);
+        return utils::OptimizedResult::copy(optimized);
+    } else if (optimized.hasFlag(utils::OptimizedFlag::Useless)) {
+        return utils::OptimizedResult(utils::OptimizedFlag::Useless);
+    } else if (optimized.hasFlag(utils::OptimizedFlag::Optimized)) {
+        optimized.swapWith(this->contained);
     }
 
-    return std::nullopt;
+    return utils::OptimizedResult(optimized.hasFlag(utils::OptimizedFlag::AlwaysNull)
+        ? utils::OptimizedFlag::AlwaysNull
+        : utils::OptimizedFlag::None
+    );
 }

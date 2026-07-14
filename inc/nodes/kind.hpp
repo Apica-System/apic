@@ -4,7 +4,7 @@
 
 namespace nodes {
     enum NodeKind : uint8_t {
-        Bad, EndOfFile, Compound,
+        Bad, EndOfFile, Compound, NoOp,
 
         Entrypoint, PackageCall, GlobalScope,
 
@@ -16,7 +16,7 @@ namespace nodes {
         VarConstCall, VarConstDeclaration,
         FuncCall, Parameter,
 
-        IfElse, While,
+        IfElse, While, For,
 
         Typeof,
 

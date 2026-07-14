@@ -35,6 +35,7 @@ namespace core {
         nodes::Node *parseGlobalScope(uint8_t modifier);
         nodes::Node *parseIfStatement(uint8_t modifier);
         nodes::Node *parseWhileStatement(uint8_t modifier);
+        nodes::Node *parseForStatement(uint8_t modifier);
         nodes::Node *parseTypeof(const utils::Position &typeof_position);
 
         nodes::Node *parseTernaryExpression(const utils::Position &question_pos);

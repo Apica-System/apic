@@ -15,6 +15,6 @@ void NodeData::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeData::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeData::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }

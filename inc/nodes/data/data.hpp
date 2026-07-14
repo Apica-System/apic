@@ -10,7 +10,7 @@ namespace nodes {
     
         common::bytecodes::ApicaSpecificationBytecode getSpecificationBytecode() const;
         void setId() override;
-        std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
+        utils::OptimizedResult optimize(core::Optimizer &optimizer) override;
     protected:
         NodeData(const utils::Position &position, common::bytecodes::ApicaSpecificationBytecode spec_bytecode);
 

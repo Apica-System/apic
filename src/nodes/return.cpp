@@ -1,5 +1,7 @@
 #include "nodes/return.hpp"
 #include "core/emitter.hpp"
+#include "utils/diagnostic_bag.hpp"
+#include "utils/errors.hpp"
 #include <iostream>
 
 using namespace nodes;
@@ -48,6 +50,19 @@ void NodeReturn::setId() {
     if (this->returned_expression) this->returned_expression.value()->setId();
 }
 
-std::optional<nodes::Node*> NodeReturn::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeReturn::optimize(core::Optimizer &optimizer) {
+    if (this->returned_expression) {
+        utils::OptimizedResult optimized_returned = this->returned_expression.value()->optimize(optimizer);
+        if (optimized_returned.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+            utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+                utils::DiagnosticKind::Error,
+                std::string(utils::OPM_ERROR_RETURN_UNEXPECTED),
+                this->returned_expression.value()->getPosition()
+            ));
+        } else if (optimized_returned.hasFlag(utils::OptimizedFlag::Optimized) && !optimized_returned.hasFlag(utils::OptimizedFlag::Literal)) {
+            optimized_returned.swapWith(this->returned_expression.value());
+        }
+    }
+
+    return utils::OptimizedResult(utils::OptimizedFlag::AlwaysNull);
 }

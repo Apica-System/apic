@@ -1,6 +1,13 @@
 #include "nodes/parameter.hpp"
+
 #include "core/emitter.hpp"
 #include "core/optimizer.hpp"
+
+#include "values/null.hpp"
+
+#include "utils/diagnostic_bag.hpp"
+#include "utils/errors.hpp"
+
 #include <iostream>
 
 using namespace nodes;
@@ -42,10 +49,17 @@ void NodeParameter::setId() {
     this->expression->setId();
 }
 
-std::optional<nodes::Node*> NodeParameter::optimize(core::Optimizer &optimizer) {
-    std::optional<nodes::Node*> optimized = this->expression->optimize(optimizer);
-    if (optimized)
-        optimizer.swapNode(this->expression, optimized.value());
+utils::OptimizedResult NodeParameter::optimize(core::Optimizer &optimizer) {
+    utils::OptimizedResult optimized = this->expression->optimize(optimizer);
+    if (optimized.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::OPM_ERROR_UNEXPECTED_PARAMETER),
+            this->expression->getPosition()
+        ));
+    } else if (optimized.hasFlag(utils::OptimizedFlag::Optimized)) {
+        optimized.swapWith(this->expression);
+    }
 
-    return std::nullopt;
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }

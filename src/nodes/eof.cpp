@@ -24,6 +24,6 @@ void NodeEndOfFile::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeEndOfFile::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeEndOfFile::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }

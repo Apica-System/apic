@@ -1,5 +1,12 @@
 #include "nodes/ternary.hpp"
+
 #include "core/emitter.hpp"
+#include "core/optimizer.hpp"
+
+#include "utils/diagnostic_bag.hpp"
+#include "utils/errors.hpp"
+#include "utils/warnings.hpp"
+
 #include <iostream>
 
 using namespace nodes;
@@ -46,6 +53,69 @@ void NodeTernaryOperation::setId() {
     this->false_expr->setId();
 }
 
-std::optional<nodes::Node*> NodeTernaryOperation::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeTernaryOperation::optimize(core::Optimizer &optimizer) {
+    uint8_t useless_condition = 0;
+    utils::OptimizedResult optimized_condition = this->condition->optimize(optimizer);
+    if (optimized_condition.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::OPM_ERROR_TERNARY_CONDITION_UNEXPECTED),
+            this->condition->getPosition()
+        ));
+    } else if (optimized_condition.hasFlag(utils::OptimizedFlag::Literal)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Warning,
+            std::string(utils::OPM_WRN_USELESS_TERNARY),
+            this->condition->getPosition()
+        ));
+
+        useless_condition = optimizer.getLiteralBooleanValue(optimized_condition)
+            ? 1 : 2;
+    } else if (optimized_condition.hasFlag(utils::OptimizedFlag::Optimized)) {
+        optimized_condition.swapWith(this->condition);
+    }
+
+    utils::OptimizedResult optimized_true_expr = this->true_expr->optimize(optimizer);
+    if (optimized_true_expr.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::OPM_ERROR_TERNARY_TRUE_UNEXPECTED),
+            this->true_expr->getPosition()
+        ));
+    } else if (optimized_true_expr.hasFlag(utils::OptimizedFlag::Optimized)) {
+        optimized_true_expr.swapWith(this->true_expr);
+    }
+
+    utils::OptimizedResult optimized_false_expr = this->false_expr->optimize(optimizer);
+    if (optimized_false_expr.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+        utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+            utils::DiagnosticKind::Error,
+            std::string(utils::OPM_ERROR_TERNARY_FALSE_UNEXPECTED),
+            this->false_expr->getPosition()
+        ));
+    } else if (optimized_false_expr.hasFlag(utils::OptimizedFlag::Optimized)) {
+        optimized_false_expr.swapWith(this->false_expr);
+    }
+
+    switch (useless_condition) {
+        case 1: {
+            nodes::Node *true_expr = this->true_expr;
+            this->true_expr = nullptr;
+            return utils::OptimizedResult(
+                utils::OptimizedFlag::Optimized,
+                true_expr
+            );
+        }
+
+        case 2: {
+            nodes::Node *false_expr = this->false_expr;
+            this->false_expr = nullptr;
+            return utils::OptimizedResult(
+                utils::OptimizedFlag::Optimized,
+                false_expr
+            );
+        }
+
+        default: return utils::OptimizedResult(utils::OptimizedFlag::None);
+    }
 }

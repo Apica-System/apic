@@ -84,6 +84,9 @@ namespace utils {
     inline constexpr std::string_view PAR_ERROR_UNTERMINATED_WHILE_CND = "ParserError: Expected a `)` to end a while condition";
     inline constexpr std::string_view PAR_ERROR_NOT_SEPARATED_STATS = "ParserError: Statements must be separated by a new-line or a `;`";
     inline constexpr std::string_view PAR_ERROR_VAR_CONST_WITHOUT_ANYTHING = "ParserError: Cannot declare a variable or a constant without type and expression";
+    inline constexpr std::string_view PAR_ERROR_FOR_WITHOUT_LPARENTH = "ParserError: Expected a `(` to begin a for declaration";
+    inline constexpr std::string_view PAR_ERROR_UNTERMINATED_FOR = "ParserError: Expected a `)` to end a for declaration";
+    inline constexpr std::string_view PAR_ERROR_FOR_WITHOUT_SEMICOLON = "ParserError: Expected a `;` between sections of a for declaration";
 
 
     // Analyzer errors
@@ -96,9 +99,6 @@ namespace utils {
     inline constexpr std::string_view ANL_ERROR_NO_VERSION_SPEC = "AnalyzerError: A correct main apica source file must contain a `version` specification attribute on the block of specifications";
     inline constexpr std::string_view ANL_ERROR_NOT_UNIQUE_VC = "AnalyzerError: Cannot declare twice a variable or constant with the same name in the same scope";
     inline constexpr std::string_view ANL_ERROR_UNDEFINED_VC = "AnalyzerError: Cannot call an undefined variable or constant";
-
-
-    // Optimizer errors
 
 
     // Emitter errors
@@ -117,4 +117,20 @@ namespace utils {
     inline constexpr std::string_view EMT_ERROR_INCORRECT_VAR_CONST_BUILTIN = "EmitterError: An unknown builtin variable or constant was found";
     inline constexpr std::string_view EMT_ERROR_INCORRECT_TYPE = "EmitterError: An unknown type declaration was found in a typeof";
     inline constexpr std::string_view EMT_ERROR_UNKNOWN_FUNC_CALL = "EmitterError: Cannot call an undefined function";
+
+
+    // Optimizer errors
+    inline constexpr std::string_view OPM_ERROR_NULL_OPERAND_FOUND = "OptimizerError: The operand is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_WHILE_UNEXPECTED_CONDITION = "OptimizerError: The while condition is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_FOR_UNEXPECTED_INIT = "OptimizerError: The for initialize-part is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_FOR_UNEXPECTED_END = "OptimizerError: The for end-part is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_FOR_UNEXPECTED_CONDITION = "OptimizerError: The for condition is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_IF_UNEXPECTED_CONDITION = "OptimizerError: The if condition is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_UNEXPECTED_PARAMETER = "OptimizerError: The parameter is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_RETURN_UNEXPECTED = "OptimizerError: The return expression is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_TERNARY_CONDITION_UNEXPECTED = "OptimizerError: The ternary-operation condition is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_TERNARY_TRUE_UNEXPECTED = "OptimizerError: The ternary-operation true expression is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_TERNARY_FALSE_UNEXPECTED = "OptimizerError: The ternary-operation false expression is not a valid expression";
+    inline constexpr std::string_view OPM_ERROR_BINARY_OPERATOR_EXPECTED_VAR_CONST = "OptimizerError: The binary operator cannot be applied to a non var-const-call left operand";
+    inline constexpr std::string_view OPM_ERROR_UNARY_OPERATOR_EXPECTED_VAR_CONST = "OptimizerError: The unary operator cannot be applied to a non var-const-call operand";
 }

@@ -24,6 +24,6 @@ void NodeBad::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeBad::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeBad::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }

@@ -13,9 +13,12 @@ namespace nodes {
         NodeKind getKind() const override;
         void emit(core::Emitter &emitter) const override;
         void setId() override;
-        std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
+        utils::OptimizedResult optimize(core::Optimizer &optimizer) override;
     private:
         utils::TokenKind unary_operator;
         Node *operand;
+
+        utils::OptimizedResult optimizeOperation();
+        void checkCorrectVarConstAccess(const utils::OptimizedResult &optimized_operand);
     };
 }

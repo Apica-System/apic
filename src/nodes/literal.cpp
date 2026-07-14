@@ -85,8 +85,11 @@ void NodeLiteral::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeLiteral::optimize(core::Optimizer &) {
-    return this;
+utils::OptimizedResult NodeLiteral::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(
+        utils::OptimizedFlag::Literal,
+        new nodes::NodeLiteral(this->getValue()->autoConvert(this->getValue()->getKind()).value())
+    );
 }
 
 common::values::Value *NodeLiteral::getValue() const {

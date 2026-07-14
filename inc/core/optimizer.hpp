@@ -5,24 +5,22 @@
 #include "nodes/global_scope.hpp"
 #include "nodes/literal.hpp"
 
-#include <optional>
-
 namespace core {
     enum OptimizerModifier : uint8_t {
-        OM_None =           0b00000000,
-        OM_Builtin =        0b00000001,
+        None =              0b00000000,
+        Builtin =           0b00000001,
+        AggregateCompound = 0b00000010
     };
 
     class Optimizer final {
     public:
         Optimizer();
 
-        uint8_t getModifier() const;
+        bool hasModifier(OptimizerModifier modifier) const;
         void addModifier(OptimizerModifier modifier);
         void removeModifier(OptimizerModifier modifier);
 
-        void deleteNode(nodes::Node *node, nodes::Node *optimized);
-        void swapNode(nodes::Node *&node, nodes::Node *optimized);
+        bool getLiteralBooleanValue(utils::OptimizedResult &result);
     private:
         uint8_t modifier;
     };

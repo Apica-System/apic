@@ -74,10 +74,11 @@ void NodeFuncCall::setId() {
         parameter->setId();
 }
 
-std::optional<nodes::Node*> NodeFuncCall::optimize(core::Optimizer &optimizer) {
+utils::OptimizedResult NodeFuncCall::optimize(core::Optimizer &optimizer) {
+    optimizer.removeModifier(core::OptimizerModifier::Builtin);
     for (nodes::Node *node : this->parameters) {
         node->optimize(optimizer);
     }
 
-    return std::nullopt;
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }

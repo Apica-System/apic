@@ -95,11 +95,8 @@ entry quit {}
         }
 
         if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
-            std::optional<std::string> no_opt = apic_options.getOption(core::ApicOptionKind::NoOptimisation);
-            if (!no_opt) {
-                core::Optimizer optimizer;
-                root->optimize(optimizer);
-            }
+            core::Optimizer optimizer;
+            root->optimize(optimizer);
         }
 
         if (!utils::DiagnosticBag::getInstance().hasAnyError()) {
@@ -113,6 +110,14 @@ entry quit {}
                 std::string indent;
                 root->show(indent, '\n');
             }
+        }
+
+        std::optional<std::string> warnings_as_errors = apic_options.getOption(core::ApicOptionKind::WarningsAsErrors);
+        if (warnings_as_errors && utils::DiagnosticBag::getInstance().hasAnyWarning()) {
+            utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+                utils::DiagnosticKind::Error,
+                "apic error : warnings are considered as errors"
+            ));
         }
 
         {

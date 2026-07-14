@@ -85,6 +85,15 @@ void NodeVarConstDeclaration::setId() {
     if (this->expression) this->expression.value()->setId();
 }
 
-std::optional<nodes::Node*> NodeVarConstDeclaration::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeVarConstDeclaration::optimize(core::Optimizer &optimizer) {
+    if (this->expression) {
+        utils::OptimizedResult optimized_expression = this->expression.value()->optimize(optimizer);
+        if (optimized_expression.hasFlag(utils::OptimizedFlag::AlwaysNull)) {
+
+        } else if (optimized_expression.hasFlag(utils::OptimizedFlag::Optimized)) {
+            optimized_expression.swapWith(this->expression.value());
+        }
+    }
+
+    return utils::OptimizedResult(utils::OptimizedFlag::AlwaysNull);
 }

@@ -23,6 +23,7 @@
 #include "nodes/global_scope.hpp"
 #include "nodes/if_else.hpp"
 #include "nodes/while.hpp"
+#include "nodes/for.hpp"
 #include "nodes/data/specs.hpp"
 #include "nodes/data/string.hpp"
 #include "nodes/data/u32.hpp"
@@ -76,7 +77,7 @@ nodes::NodeCompound *Parser::parse() {
 
 void Parser::skipNewLines() {
     utils::TokenKind actual = this->get().getKind();
-    while (actual == utils::TokenKind::NewLine || actual == utils::TokenKind::SemiColon) {
+    while (actual == utils::TokenKind::NewLine /*|| actual == utils::TokenKind::SemiColon*/) {
         this->advance();
         actual = this->get().getKind();
     }
@@ -121,20 +122,25 @@ void Parser::matchToken(utils::TokenKind expected, const std::string &error_text
 nodes::Node *Parser::parseStatement(uint8_t modifier) {
     this->skipNewLines();
     utils::TokenKind current_kind = this->get().getKind();
+
+    std::optional<nodes::Node*> result = std::nullopt;
     switch (current_kind) {
         case utils::TokenKind::LeftBrace: return this->parseCompound(modifier);
         case utils::TokenKind::Entrypoint: return this->parseEntrypoint(modifier);
         case utils::TokenKind::Specifications: return this->parseSpecifications(modifier);
-        case utils::TokenKind::Var: return this->parseVarConstDecl(false);
-        case utils::TokenKind::Const: return this->parseVarConstDecl(true);
+        case utils::TokenKind::Var: result = this->parseVarConstDecl(false); break;
+        case utils::TokenKind::Const: result = this->parseVarConstDecl(true); break;
         case utils::TokenKind::Global: return this->parseGlobalScope(modifier);
         case utils::TokenKind::If: return this->parseIfStatement(modifier);
         case utils::TokenKind::While: return this->parseWhileStatement(modifier);
+        case utils::TokenKind::For: return this->parseForStatement(modifier);
 
         default: break;
     }
 
-    std::optional<nodes::Node*> result = this->parseController(modifier);
+    if (!result)
+        result = this->parseController(modifier);
+    
     if (!result)
         result = this->parseBinaryUnaryExpression(0);
     
@@ -151,7 +157,10 @@ nodes::Node *Parser::parseStatement(uint8_t modifier) {
             return result.value();
         }
 
-        this->advance();
+        while (current.getKind() == utils::TokenKind::SemiColon || current.getKind() == utils::TokenKind::NewLine) {
+            this->advance();
+            current = this->get();
+        }
     }
     
     return result.value();
@@ -532,6 +541,38 @@ nodes::Node *Parser::parseWhileStatement(uint8_t modifier) {
     return new nodes::NodeWhile(
         utils::Position(while_token_pos, body->getPosition()),
         condition, body
+    );
+}
+
+nodes::Node *Parser::parseForStatement(uint8_t modifier) {
+    utils::Position for_token_pos = this->getAndAdvance().getPosition();
+    
+    this->skipNewLines();
+    this->matchToken(utils::TokenKind::LeftParenthesis, std::string(utils::PAR_ERROR_FOR_WITHOUT_LPARENTH));
+    this->skipNewLines();
+
+    std::optional<nodes::Node*> init = std::nullopt;
+    if (this->get().getKind() != utils::TokenKind::SemiColon)
+        init = this->parseStatement(ParserModifier::PM_FullStatement);
+    else
+        this->advance();
+
+    this->skipNewLines();
+    nodes::Node *condition = this->parseStatement(ParserModifier::PM_FullStatement);
+    this->skipNewLines();
+
+    std::optional<nodes::Node*> end = std::nullopt;
+    if (this->get().getKind() != utils::TokenKind::RightParenthesis) {
+        end = this->parseStatement(ParserModifier::PM_InnerScope);
+        this->skipNewLines();
+    }
+
+    this->matchToken(utils::TokenKind::RightParenthesis, std::string(utils::PAR_ERROR_UNTERMINATED_FOR));
+
+    nodes::Node *body = this->parseStatement(modifier | ParserModifier::PM_InnerScope | ParserModifier::PM_FullStatement | ParserModifier::PM_LoopScope);
+    return new nodes::NodeFor(
+        utils::Position(for_token_pos, body->getPosition()), 
+        init, condition, end, body
     );
 }
 

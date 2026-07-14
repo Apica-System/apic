@@ -57,13 +57,19 @@ void NodeVarConstCall::setId() {
     this->id = associated_id.value();
 }
 
-std::optional<nodes::Node*> NodeVarConstCall::optimize(core::Optimizer &optimizer) {
-    if (optimizer.getModifier() & core::OptimizerModifier::OM_Builtin) {
+utils::OptimizedResult NodeVarConstCall::optimize(core::Optimizer &optimizer) {
+    bool is_builtin = optimizer.hasModifier(core::OptimizerModifier::Builtin);
+    optimizer.removeModifier(core::OptimizerModifier::Builtin);
+
+    if (is_builtin) {
         auto builtin = utils::APICA_CONSTANTS.find(this->name);
         if (builtin != utils::APICA_CONSTANTS.end()) {
-            return NodeLiteral::copyBuiltin(builtin->second);
+            return utils::OptimizedResult(
+                utils::OptimizedFlag::Literal | utils::OptimizedFlag::Optimized | utils::OptimizedFlag::VarConstAccess,
+                NodeLiteral::copyBuiltin(builtin->second)
+            );
         }
     }
 
-    return std::nullopt;
+    return utils::OptimizedResult(utils::OptimizedFlag::VarConstAccess);
 }

@@ -41,12 +41,11 @@ void NodeEntrypoint::setId() {
     this->body->setId();
 }
 
-std::optional<nodes::Node*> NodeEntrypoint::optimize(core::Optimizer &optimizer) {
-    std::optional<nodes::Node*> optimized = this->body->optimize(optimizer);
-    if (optimized)
-        delete optimized.value();
+utils::OptimizedResult NodeEntrypoint::optimize(core::Optimizer &optimizer) {
+    optimizer.addModifier(core::OptimizerModifier::AggregateCompound);
+    this->body->optimize(optimizer);
     
-    return std::nullopt;
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }
 
 common::bytecodes::ApicaEntrypointBytecode NodeEntrypoint::getEntryBytecode() const {

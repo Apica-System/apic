@@ -13,9 +13,7 @@ namespace core {
 
         SourceFile, OutputFile,
 
-        ShowNodes, 
-        
-        NoOptimisation
+        ShowNodes, WarningsAsErrors
     };
 
     class ApicOptions final {

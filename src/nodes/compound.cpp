@@ -1,8 +1,13 @@
 #include "nodes/compound.hpp"
+#include "nodes/eof.hpp"
+
 #include "core/emitter.hpp"
 #include "core/optimizer.hpp"
+
 #include "utils/id_generator.hpp"
-#include "nodes/eof.hpp"
+#include "utils/diagnostic_bag.hpp"
+#include "utils/warnings.hpp"
+
 #include <iostream>
 
 using namespace nodes;
@@ -45,7 +50,6 @@ void NodeCompound::emit(core::Emitter &emitter) const {
     for (Node *node : this->nodes)
         node->emit(emitter);
 
-    emitter.addModifier(core::EmitterModifier::EM_UnpackCompound);
     emitter.writeU64(common::bytecodes::ApicaBytecode::EndOfBlock);
 }
 
@@ -56,28 +60,39 @@ void NodeCompound::setId() {
     utils::IdGenerator::getInstance().popContext();
 }
 
-std::optional<nodes::Node*> NodeCompound::optimize(core::Optimizer &optimizer) {
+utils::OptimizedResult NodeCompound::optimize(core::Optimizer &optimizer) {
+    bool aggregate_compound = optimizer.hasModifier(core::OptimizerModifier::AggregateCompound);
+    optimizer.removeModifier(core::OptimizerModifier::AggregateCompound);
+
     for (auto it = this->nodes.begin(); it != this->nodes.end(); ) {
         nodes::Node *node = *it;
-        std::optional<nodes::Node*> optimized = node->optimize(optimizer);
-        if (optimized) {
-            if (optimized.value()->getKind() == NodeKind::EndOfFile
-                || optimized.value()->getKind() == NodeKind::Literal) {
-                optimizer.deleteNode(node, optimized.value());
 
-                it = this->nodes.erase(it);
-                continue;
-            }
+        utils::OptimizedResult optimized = node->optimize(optimizer);
+        if (optimized.hasAnyFlag(utils::OptimizedFlag::Useless | utils::OptimizedFlag::Literal)) {
+            delete node;
 
-            optimizer.swapNode(node, optimized.value());
+            it = this->nodes.erase(it);
+            continue;
+        } else if (optimized.hasFlag(utils::OptimizedFlag::Optimized)) {
+            optimized.swapWith(node);
         }
 
         ++it;
     }
 
-    if (this->nodes.empty())
-        return new NodeEndOfFile(utils::Position());
-    return std::nullopt;
+    if (this->nodes.empty()) {
+        if (!aggregate_compound) {
+            utils::DiagnosticBag::getInstance().addDiagnostic(utils::Diagnostic(
+                utils::DiagnosticKind::Warning,
+                std::string(utils::OPM_WRN_USELESS_COMPOUND),
+                this->position
+            ));
+        }
+
+        return utils::OptimizedResult(utils::OptimizedFlag::Useless | utils::OptimizedFlag::AlwaysNull);
+    }
+
+    return utils::OptimizedResult(utils::OptimizedFlag::AlwaysNull);
 }
 
 const std::vector<Node*> &NodeCompound::getNodes() const {

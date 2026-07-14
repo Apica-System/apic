@@ -42,8 +42,8 @@ void NodeDataSpecifications::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeDataSpecifications::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeDataSpecifications::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }
 
 const std::vector<NodeData*> &NodeDataSpecifications::getDataNodes() const {

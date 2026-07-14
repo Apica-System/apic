@@ -15,12 +15,13 @@ namespace nodes {
         NodeKind getKind() const override;
         void emit(core::Emitter &emitter) const override;
         void setId() override;
-        std::optional<nodes::Node*> optimize(core::Optimizer &optimizer) override;
+        utils::OptimizedResult optimize(core::Optimizer &optimizer) override;
     private:
         utils::TokenKind binary_operator;
         Node *left;
         std::optional<Node*> right;
 
-        std::optional<nodes::Node*> optimizeFullBinary();
+        utils::OptimizedResult optimizeOperation();
+        void checkCorrectVarConstAccess(const utils::OptimizedResult &optimized_left);
     };
 }

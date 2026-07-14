@@ -49,8 +49,8 @@ ApicOptions ApicOptions::getOptions(int argc, char **argv) {
             } else if (!strcmp(argv[i], "--nodes")) {
                 if (!apic_options.addOption(ApicOptionKind::ShowNodes, "", "--nodes"))
                     return apic_options;
-            } else if (!strcmp(argv[i], "--no-opt")) {
-                if (!apic_options.addOption(ApicOptionKind::NoOptimisation, "", "--no-opt"))
+            } else if (!strcmp(argv[i], "--werror")) {
+                if (!apic_options.addOption(ApicOptionKind::WarningsAsErrors, "", "--werror"))
                     return apic_options;
             } else {
                 std::string error_message(utils::OPT_ERROR_INVALID_OPTION);

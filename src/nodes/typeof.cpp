@@ -39,6 +39,6 @@ void NodeTypeof::setId() {
     
 }
 
-std::optional<nodes::Node*> NodeTypeof::optimize(core::Optimizer &) {
-    return std::nullopt;
+utils::OptimizedResult NodeTypeof::optimize(core::Optimizer &) {
+    return utils::OptimizedResult(utils::OptimizedFlag::None);
 }
